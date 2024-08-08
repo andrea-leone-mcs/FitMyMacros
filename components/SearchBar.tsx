@@ -1,47 +1,16 @@
-import React, { useEffect, useState, } from "react";
-import { StyleSheet, TextInput, View, Keyboard, Button, ActivityIndicator } from "react-native";
+import React, { useState, } from "react";
+import { StyleSheet, TextInput, Keyboard, Button } from "react-native";
 import Ionicons from "@react-native-vector-icons/ionicons";
 import Colors from "../styles/Colors";
-import { findFoodById, findMatchingFoods } from "../apis/apis";
+import { findMatchingFoods } from "../apis/apis";
 import { ThemedView } from "./ThemedComponents";
-import SelectAmountDialog from "./SelectAmountDialog";
 
-const SearchBar = ({ navigation, setSearchResults, addCallback, barcode }) => {
+const SearchBar = ({ navigation, setSearchResults, setScannerEnabled, enabled, setLoading }) => {
   const [clicked, setClicked] = useState(false);
   const [searchPhrase, setSearchPhrase] = useState("");
-  const [scanFood, setScanFood] = useState<object>({});
-  const [scanDialogVisible, setScanDialogVisible] = useState(false);
-  const [scanAmount, setScanAmount] = useState(100);
-  const [loading, setLoading] = useState(barcode !== undefined);
-
-  useEffect(() => {
-    console.log('barcode', barcode);
-    if (barcode !== undefined) {
-      setLoading(true);
-      findFoodById(barcode).then((food: object) => {
-        setScanFood(food);
-        setScanDialogVisible(true);
-        barcode = undefined;
-      });
-    }
-  }, [barcode]);
-
-  useEffect(() => {
-    setLoading(barcode !== undefined && !scanDialogVisible);
-  }, [scanDialogVisible]);
 
   return (
     <>
-      {scanFood &&
-        <SelectAmountDialog
-          food={scanFood}
-          visible={scanDialogVisible}
-          setVisible={setScanDialogVisible}
-          amount={scanAmount}
-          setAmount={setScanAmount}
-          addCallback={addCallback}
-          editCallback={undefined} />
-      }
       <ThemedView style={styles.container}>
         <ThemedView style={clicked ? styles.searchBar__clicked : styles.searchBar__unclicked}>
           <Ionicons
@@ -59,6 +28,7 @@ const SearchBar = ({ navigation, setSearchResults, addCallback, barcode }) => {
               setClicked(true);
             }}
             onSubmitEditing={async () => {
+              setLoading(true);
               const matches = await findMatchingFoods(searchPhrase);
               console.log(matches);
               setSearchResults(matches);
@@ -72,6 +42,7 @@ const SearchBar = ({ navigation, setSearchResults, addCallback, barcode }) => {
               color={Colors.light}
               style={{ padding: 1, start: 0, marginRight: 10 }}
               onPress={() => {
+                if (!enabled) return;
                 setSearchPhrase("");
               }}
             />
@@ -83,6 +54,7 @@ const SearchBar = ({ navigation, setSearchResults, addCallback, barcode }) => {
               title="Cancel"
               color={Colors.darker}
               onPress={() => {
+                if (!enabled) return;
                 Keyboard.dismiss();
                 setClicked(false);
                 setSearchResults([]);
@@ -95,15 +67,13 @@ const SearchBar = ({ navigation, setSearchResults, addCallback, barcode }) => {
               color={Colors.light}
               style={{ paddingStart: 15, paddingEnd: 15 }}
               onPress={() => {
-                navigation.navigate("Scanner");
+                if (!enabled) return;
+                setScannerEnabled(true);
               }}
             />
           }
         </ThemedView>
       </ThemedView>
-      {
-        loading && <ActivityIndicator size="large" />
-      }
     </>
   );
 };

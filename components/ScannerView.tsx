@@ -1,4 +1,4 @@
-import { View, Text, SafeAreaView, ScrollView, useColorScheme, Linking, Alert, TouchableOpacity, Button, StyleSheet } from "react-native";
+import { View, Text, SafeAreaView, TouchableOpacity, StyleSheet } from "react-native";
 import Colors from "../styles/Colors";
 
 import {
@@ -8,12 +8,13 @@ import {
   useCodeScanner
 } from 'react-native-vision-camera';
 import { useEffect, useState } from "react";
-import { findFoodById } from "../apis/apis";
+import { ThemedView } from "./ThemedComponents";
+import Icon from "@react-native-vector-icons/ionicons";
 
 const PROTEIN_BISCUIT_BARCODE = '5055534301012';
 
 // Define the ScannerScreen component
-export function ScannerScreen({ navigation }) {
+export function ScannerView({ setBarcode, setScannerEnabled, setLoading }) {
   // State variables
   const [torchOn, setTorchOn] = useState(false);
   const [enableOnCodeScanned, setEnableOnCodeScanned] = useState(true);
@@ -25,7 +26,7 @@ export function ScannerScreen({ navigation }) {
   } = useCameraPermission();
 
   // Get the camera device (back camera)
-  const device = useCameraDevice('back');
+  const device = useCameraDevice('front');
 
   // Handle camera permission on component mount
   useEffect(() => {
@@ -46,8 +47,9 @@ export function ScannerScreen({ navigation }) {
 
         // Handle code
         if (type === 'ean-13' && value !== undefined) {
-          // showAlert(value, '--', false);
-          navigation.navigate("Meal", { barcode: value });
+          setBarcode(value);
+          setScannerEnabled(false);
+          setLoading(true);
         }
 
         // Disable code scanning to prevent rapid scans
@@ -109,16 +111,40 @@ export function ScannerScreen({ navigation }) {
   // };
 
   // Round button component with image
-  const RoundButtonWithImage = props => {
+  const FlashButton = props => {
     return (
       <TouchableOpacity
         onPress={() => setTorchOn((prev) => !prev)}>
         <View>
-          <Button title={torchOn ? 'Turn Off' : 'Turn On'} />
+          <Icon name={torchOn ? "flash-sharp" : "flash-off-sharp"}
+            size={40}
+            color={torchOn ? '#FFD700' : '#808080'}
+            style={{ borderColor: Colors.white }}
+          />
+          <Text style={{ color: Colors.white, fontSize: 14, marginTop: 6, textAlign: 'center' }}>
+            {torchOn ? 'ON' : 'OFF'}
+          </Text>
         </View>
       </TouchableOpacity>
     );
   };
+  const CloseButton = props => {
+    return (
+      <TouchableOpacity
+        onPress={() => setScannerEnabled(false)}>
+        <View>
+          <Icon name="close-outline"
+            size={40}
+            color={Colors.light}
+            style={{ borderColor: Colors.white }}
+          />
+          <Text style={{ color: Colors.white, fontSize: 14, marginTop: 6, textAlign: 'center' }}>
+            Close
+          </Text>
+        </View>
+      </TouchableOpacity>
+    );
+  }
 
   // Render content based on camera device availability
   if (device == null)
@@ -132,35 +158,46 @@ export function ScannerScreen({ navigation }) {
 
   // Return the main component structure
   return (
-    <SafeAreaView style={{ flex: 1 }}>
-      <Camera
-        codeScanner={codeScanner}
-        style={styles.cameraContainer}
-        device={device}
-        isActive={true}
-        torch={torchOn ? 'on' : 'off'}
-        onTouchEnd={() => setEnableOnCodeScanned(true)}
-      />
-      <View style={styles.overlay}>
-        <RoundButtonWithImage />
-      </View>
+    <SafeAreaView style={styles.container}>
+      <ThemedView style={styles.cameraContainer}>
+        <Camera
+          codeScanner={codeScanner}
+          style={styles.camera}
+          device={device}
+          isActive={true}
+          torch={torchOn ? 'on' : 'off'}
+          onTouchEnd={() => setEnableOnCodeScanned(true)}
+        />
+        <ThemedView style={styles.cameraButtons}>
+          <FlashButton />
+          <CloseButton />
+        </ThemedView>
+      </ThemedView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    backgroundColor: 'grey',
+    //flex: 1,
+    backgroundColor: Colors.darker,
+    width: '100%',
   },
   cameraContainer: {
-    ...StyleSheet.absoluteFillObject,
-    zIndex: -1,
-
-  },
-  overlay: {
-    flex: 1,
+    backgroundColor: Colors.darker,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  camera: {
+    //...StyleSheet.absoluteFillObject,
+    width: '90%',
+    height: 250,
+  },
+  cameraButtons: {
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 10,
+    flexDirection: 'row',
+    width: '50%',
   },
 });

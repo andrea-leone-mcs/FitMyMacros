@@ -1,6 +1,6 @@
 import { FlatList, Swipeable, TextInput } from "react-native-gesture-handler";
 import { ThemedText, ThemedView } from "./ThemedComponents";
-import { Keyboard, Pressable, StyleSheet, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Keyboard, Pressable, StyleSheet, TouchableOpacity, View } from "react-native";
 import Colors from "../styles/Colors";
 import DialogContainer from "react-native-dialog/lib/Container";
 import { useEffect, useState } from "react";
@@ -23,7 +23,7 @@ function FoodItem({ navigation, food, addCallback, removeCallback, editCallback 
       }]}>
         {
           removeCallback &&
-          <ThemedView style={{ backgroundColor: trashBackgroundColor, borderRadius: 25, padding: 10}}>
+          <ThemedView style={{ backgroundColor: trashBackgroundColor, borderRadius: 25, padding: 10 }}>
             <Ionicons
               name="trash-outline"
               size={24}
@@ -33,7 +33,7 @@ function FoodItem({ navigation, food, addCallback, removeCallback, editCallback 
               onPress={() => removeCallback(food)} />
           </ThemedView>
         }
-        <TouchableOpacity style={{flex:1}} onPress={() => {
+        <TouchableOpacity style={{ flex: 1 }} onPress={() => {
           if (addCallback || editCallback)
             setDialogVisible(true);
         }}
@@ -64,16 +64,19 @@ function FoodItem({ navigation, food, addCallback, removeCallback, editCallback 
   );
 }
 
-function FoodsList({ navigation, foods, addCallback, removeCallback, editCallback }) {
+function FoodsList({ navigation, foods, addCallback, removeCallback, editCallback, loading }) {
   return (
-    <FlatList
-      style={{ width: '90%' }}
-      data={foods}
-      renderItem={({ item }) => (
-        <FoodItem navigation={navigation} food={item} addCallback={addCallback} removeCallback={removeCallback} editCallback={editCallback} />
-      )}
-      keyExtractor={item => item.id}
-    />
+    loading ?
+      <ActivityIndicator size="large" color={Colors.light} style={{ flex: 1, alignContent: 'center', justifyContent: 'center' }} />
+      :
+      <FlatList
+        style={{ width: '90%' }}
+        data={foods}
+        renderItem={({ item }) => (
+          <FoodItem navigation={navigation} food={item} addCallback={addCallback} removeCallback={removeCallback} editCallback={editCallback} />
+        )}
+        keyExtractor={item => item.id}
+      />
   );
 }
 

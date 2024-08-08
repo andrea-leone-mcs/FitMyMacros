@@ -6,7 +6,6 @@ import MealScreen from "./screens/MealScreen";
 import { createStackNavigator } from "@react-navigation/stack";
 import { useColorScheme } from "react-native";
 import Colors from "./styles/Colors";
-import { ScannerScreen } from "./screens/ScannerScreen";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { DatabaseContextProvider } from "./storage/dbContext";
 
@@ -40,11 +39,11 @@ function App(): React.JSX.Element {
                 }}
               />
               <Stack.Screen name="Meal" component={MealScreen} />
-              <Stack.Screen
+              {/* {<Stack.Screen
                 name="Scanner"
                 component={ScannerScreen}
                 options={{ headerShown: false }}
-              />
+              />} */}
             </Stack.Navigator>
           </NavigationContainer>
         </SafeAreaView>
