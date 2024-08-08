@@ -1,79 +1,13 @@
-This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
+# FitMyMacros
+## Description
+This project's goal is to practice **React Native** and **Typescript** by creating a simple app that calculates the user's daily macronutrient intake based on their goals.\
+The choice of this project comes from a personal need of tracking macros and the lack of a simple, basic, clean app to do that. Most of the apps on the market compute the user's daily intake based on their weight, height, age, and activity level, but they don't allow the user to set a specific goal (at least not in the free version).
 
-# Getting Started
+**FitMyMacros** is intended to be used by people with a basic understanding of macronutrients, calories, and their goals. Since there is no magic formula to calculate the perfect intakes, the user should set his goals on his own, based on his knowledge and personal experience. However, including a basic calculator to help the user set his goals is an idea for future development.
 
->**Note**: Make sure you have completed the [React Native - Environment Setup](https://reactnative.dev/docs/environment-setup) instructions till "Creating a new application" step, before proceeding.
+This application also comes with a new feature which is super useful for people who are following a _flexible dieting_ / _IIFYM_ approach. Once a meal is selected, the app allows the user to select three foods as main sources of carbs, proteins and fats. The user can set the amount of each macronutrient to reach for that meal, and the app will calculate the total amount of each food needed to reach the goal.\
+For instance, if today I decide to eat pasta with olive oil and cheese, plus some chicken as a second dish, and I want to reach 80g of carbs, 20g of fats and 40g of proteins, the app will tell me how much pasta, oil, cheese and chicken I need to reach that goal.\
+This is something I have often done manually, and I think it would be a great feature to have in a macro tracking app.
 
-## Step 1: Start the Metro Server
-
-First, you will need to start **Metro**, the JavaScript _bundler_ that ships _with_ React Native.
-
-To start Metro, run the following command from the _root_ of your React Native project:
-
-```bash
-# using npm
-npm start
-
-# OR using Yarn
-yarn start
-```
-
-## Step 2: Start your Application
-
-Let Metro Bundler run in its _own_ terminal. Open a _new_ terminal from the _root_ of your React Native project. Run the following command to start your _Android_ or _iOS_ app:
-
-### For Android
-
-```bash
-# using npm
-npm run android
-
-# OR using Yarn
-yarn android
-```
-
-### For iOS
-
-```bash
-# using npm
-npm run ios
-
-# OR using Yarn
-yarn ios
-```
-
-If everything is set up _correctly_, you should see your new app running in your _Android Emulator_ or _iOS Simulator_ shortly provided you have set up your emulator/simulator correctly.
-
-This is one way to run your app — you can also run it directly from within Android Studio and Xcode respectively.
-
-## Step 3: Modifying your App
-
-Now that you have successfully run the app, let's modify it.
-
-1. Open `App.tsx` in your text editor of choice and edit some lines.
-2. For **Android**: Press the <kbd>R</kbd> key twice or select **"Reload"** from the **Developer Menu** (<kbd>Ctrl</kbd> + <kbd>M</kbd> (on Window and Linux) or <kbd>Cmd ⌘</kbd> + <kbd>M</kbd> (on macOS)) to see your changes!
-
-   For **iOS**: Hit <kbd>Cmd ⌘</kbd> + <kbd>R</kbd> in your iOS Simulator to reload the app and see your changes!
-
-## Congratulations! :tada:
-
-You've successfully run and modified your React Native App. :partying_face:
-
-### Now what?
-
-- If you want to add this new React Native code to an existing application, check out the [Integration guide](https://reactnative.dev/docs/integration-with-existing-apps).
-- If you're curious to learn more about React Native, check out the [Introduction to React Native](https://reactnative.dev/docs/getting-started).
-
-# Troubleshooting
-
-If you can't get this to work, see the [Troubleshooting](https://reactnative.dev/docs/troubleshooting) page.
-
-# Learn More
-
-To learn more about React Native, take a look at the following resources:
-
-- [React Native Website](https://reactnative.dev) - learn more about React Native.
-- [Getting Started](https://reactnative.dev/docs/environment-setup) - an **overview** of React Native and how setup your environment.
-- [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
-- [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
-- [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
+## User Interface
+The UI is intended to be as simple and clean as possible: no fancy graphics and animations, just a basic, easy-to-use interface.
