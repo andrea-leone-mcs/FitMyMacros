@@ -6,8 +6,8 @@ import DialogContainer from "react-native-dialog/lib/Container";
 import { useEffect, useState } from "react";
 import DialogButton from "react-native-dialog/lib/Button";
 import DialogInput from "react-native-dialog/lib/Input";
-import { MinusButton, PlusButton } from "./Buttons";
 import { roundToDecimalPlaces } from "../utils/utils";
+import { AddButton, RemoveButton } from "./Buttons";
 
 
 function SelectAmountDialog({ food, visible, setVisible, amount, setAmount, addCallback, editCallback }) {
@@ -25,7 +25,7 @@ function SelectAmountDialog({ food, visible, setVisible, amount, setAmount, addC
     <DialogContainer visible={visible} headerStyle={{ margin: 5, }} contentStyle={{ alignItems: "center" }}>
       <ThemedText style={{ fontSize: 20 }}>{food.name}</ThemedText>
       <View style={[styles.row, { justifyContent: "center", alignItems: "center" }]}>
-        <MinusButton callback={() => {
+        <RemoveButton callback={() => {
           if (localAmount >= 5) {
             setLocalAmount(localAmount - 5);
           } else {
@@ -47,7 +47,7 @@ function SelectAmountDialog({ food, visible, setVisible, amount, setAmount, addC
           }}
         />
         <ThemedText style={{ fontSize: 20 }}> grams</ThemedText>
-        <PlusButton callback={() => {
+        <AddButton callback={() => {
           setLocalAmount(localAmount + 5);
           Keyboard.dismiss();
         }} style={{ marginLeft: 20 }} />
