@@ -23,7 +23,7 @@ function FoodItem({ navigation, food, addCallback, removeCallback, editCallback 
       }]}>
         {
           removeCallback &&
-          <ThemedView style={{ backgroundColor: trashBackgroundColor, borderRadius: 25, padding: 10 }}>
+          <ThemedView style={{ backgroundColor: trashBackgroundColor, padding: 6 }}>
             <Ionicons
               name="trash-outline"
               size={24}
@@ -39,22 +39,36 @@ function FoodItem({ navigation, food, addCallback, removeCallback, editCallback 
         }}
         >
           <ThemedView style={{ backgroundColor: Colors.dark, paddingHorizontal: 10, }}>
-            <ThemedView style={[styles.row, { justifyContent: "space-between" }]}>
-              <ThemedText style={{ fontSize: 20, marginBottom: 4, }}>{food.name}</ThemedText>
-              {"amount" in food && (<ThemedText style={{ fontSize: 16, marginBottom: 4, }}>{food.amount} grams</ThemedText>)}
+            <ThemedView style={{ backgroundColor: Colors.dark, justifyContent: "space-between", marginBottom: 4 }}>
+              <ThemedText style={{ fontSize: 18, width: '75%' }}>{food.name}</ThemedText>
+              {
+                food.brand &&
+                <ThemedText style={{ verticalAlign: 'middle' }}>
+                  {food.brand}
+                </ThemedText>
+              }
             </ThemedView>
             <View style={styles.line} />
-            <ThemedView style={[styles.row,]}>
-              <ThemedText>kcal</ThemedText>
-              <ThemedText>carbs</ThemedText>
-              <ThemedText>pros</ThemedText>
-              <ThemedText>fats</ThemedText>
-            </ThemedView>
-            <ThemedView style={[styles.row,]}>
-              <ThemedText>{roundToDecimalPlaces(amount * 0.01 * food.kcals, 1)}</ThemedText>
-              <ThemedText>{roundToDecimalPlaces(amount * 0.01 * food.carbs, 1)}</ThemedText>
-              <ThemedText>{roundToDecimalPlaces(amount * 0.01 * food.proteins, 1)}</ThemedText>
-              <ThemedText>{roundToDecimalPlaces(amount * 0.01 * food.fats, 1)}</ThemedText>
+            <ThemedView style={[styles.row, { backgroundColor: Colors.dark, marginHorizontal: 12 }]}>
+              <ThemedView style={{ backgroundColor: Colors.dark, width: food.amount ? '60%' : '100%' }}>
+                <ThemedView style={[styles.row,]}>
+                  <ThemedText>kcal</ThemedText>
+                  <ThemedText>carbs</ThemedText>
+                  <ThemedText>pros</ThemedText>
+                  <ThemedText>fats</ThemedText>
+                </ThemedView>
+                <ThemedView style={[styles.row,]}>
+                  <ThemedText>{roundToDecimalPlaces(amount * 0.01 * food.kcals, 1)}</ThemedText>
+                  <ThemedText>{roundToDecimalPlaces(amount * 0.01 * food.carbs, 1)}</ThemedText>
+                  <ThemedText>{roundToDecimalPlaces(amount * 0.01 * food.proteins, 1)}</ThemedText>
+                  <ThemedText>{roundToDecimalPlaces(amount * 0.01 * food.fats, 1)}</ThemedText>
+                </ThemedView>
+              </ThemedView>
+              { food.amount &&
+                (<ThemedText style={{ fontSize: 14, verticalAlign: 'middle' }}>
+                  {food.amount} grams
+                </ThemedText>)
+              }
             </ThemedView>
           </ThemedView>
         </TouchableOpacity>

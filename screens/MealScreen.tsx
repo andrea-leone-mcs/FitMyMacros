@@ -85,11 +85,11 @@ function MealScreen({ navigation, route }): React.JSX.Element {
         borderBottomColor: Colors.light,
         borderBottomWidth: 1,
       }} />
-      <ThemedText style={{
+      {/* {<ThemedText style={{
         fontSize: 20,
         fontWeight: 'bold',
         marginVertical: 10,
-      }}>Search Food</ThemedText>
+      }}>Search Food</ThemedText>} */}
       {
         scannerEnabled ?
           <ScannerView setBarcode={setBarcode} setScannerEnabled={setScannerEnabled} setLoading={setLoading} />
