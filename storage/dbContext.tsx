@@ -18,7 +18,7 @@ const DatabaseContextProvider = ({ children }) => {
         error => console.log("Database open error: ", error)
       );
       dbInstance.transaction(tx => {
-        tx.executeSql("CREATE TABLE IF NOT EXISTS foods (id TEXT, name TEXT, kcals FLOAT, carbs FLOAT, proteins FLOAT, fats FLOAT)", [],
+        tx.executeSql("CREATE TABLE IF NOT EXISTS foods (id TEXT, name TEXT, brand TEXT, kcals FLOAT, carbs FLOAT, proteins FLOAT, fats FLOAT, timestamp DATETIME)", [],
           () => {
             console.log("Table 'food' created successfully");
           },
@@ -58,6 +58,49 @@ const DatabaseContextProvider = ({ children }) => {
   );
 };
 
+const getRecentFoods = async (db: SQLite.SQLiteDatabase) => {
+  if (!db) { throw new Error("Can't retrieve db from DatabaseContext"); }
+
+  let res = { "Breakfast": [], "Lunch": [], "Snacks": [], "Dinner": [] };
+
+  await db.transaction(tx => {
+    tx.executeSql("SELECT name AS meal_name, food_id FROM eaten_food, meals WHERE eaten_food.meal_id = meals.id AND meals.date > datetime('now', '-7 day')", [],
+      (tx, results) => {
+        console.log("SELECT eaten_food, meals success: ", results.rows.length, " results.");
+        let foods_per_meal = { "Breakfast": new Set<string>(), "Lunch": new Set<string>(), "Snacks": new Set<string>(), "Dinner": new Set<string>() };
+        for (let i = 0; i < results.rows.length; i++) {
+          const item = results.rows.item(i);
+          foods_per_meal[item.meal_name].add(item.food_id);
+        }
+        let all_foods: string[] = []
+        for (const meal in foods_per_meal) {
+          foods_per_meal[meal] = [...foods_per_meal[meal]];
+          all_foods = [...all_foods, ...foods_per_meal[meal]];
+        }
+        const in_list = "("+all_foods.map(() => "?").join(",")+")";
+        
+        tx.executeSql("SELECT id, name, brand, kcals, proteins, carbs, fats FROM foods WHERE id IN "+in_list, all_foods,
+          (tx, results) => {
+            console.log("SELECT foods success: ", results.rows.length, " results.");
+            let foods = {};
+            for (let i = 0; i < results.rows.length; i++) {
+              // TODO: check timestamp and request new data if too old
+              const item = results.rows.item(i);
+              foods[item.id] = item;
+            }
+            for (const meal in foods_per_meal) {
+              res[meal] = foods_per_meal[meal].map(id => foods[id]);
+            }
+          },
+          error => console.log("Select error: ", error)
+        );
+      },
+      error => console.log("Select error: ", error)
+    );
+  });
+  return res;
+}
+
 const getMealData = async (db: SQLite.SQLiteDatabase, mealId: number) => {
   if (!db) { throw new Error("Can't retrieve db from DatabaseContext"); }
 
@@ -82,7 +125,7 @@ const getMealData = async (db: SQLite.SQLiteDatabase, mealId: number) => {
         console.log('eaten_ids', eaten_ids);
         if (eaten_ids.length > 0) {
           const in_list = "("+eaten_ids.map(() => "?").join(",")+")";
-          tx.executeSql("SELECT id, name, kcals, proteins, carbs, fats FROM foods WHERE id IN "+in_list, eaten_ids,
+          tx.executeSql("SELECT id, name, brand, kcals, proteins, carbs, fats FROM foods WHERE id IN "+in_list, eaten_ids,
             (tx, results) => {
               console.log("SELECT foods success: ", results.rows.length, " results.");
               for (let i = 0; i < results.rows.length; i++) {
@@ -115,7 +158,8 @@ const getMealData = async (db: SQLite.SQLiteDatabase, mealId: number) => {
 
 const addFoodTX = (db, mealId, food) => {
   db.transaction(tx => {
-    tx.executeSql("INSERT INTO foods (id, name, kcals, carbs, proteins, fats) VALUES (?, ?, ?, ?, ?, ?)", [food.id, food.name, food.kcals, food.carbs, food.proteins, food.fats],
+    tx.executeSql("INSERT INTO foods (id, name, brand, kcals, carbs, proteins, fats, timestamp) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+      [food.id, food.name, food.brand, food.kcals, food.carbs, food.proteins, food.fats, food.timestamp ? food.timestamp : new Date().toISOString()],
       () => console.log("Food item added to database"),
       error => { console.log("Food item add error: ", error); throw error; }
     );
@@ -161,4 +205,4 @@ const edtFoodTX = (db, mealId, food) => {
   });
 }
 
-export { DatabaseContext, DatabaseContextProvider, getMealData, addFoodTX, delFoodTX, edtFoodTX };
+export { DatabaseContext, DatabaseContextProvider, getRecentFoods, getMealData, addFoodTX, delFoodTX, edtFoodTX };
