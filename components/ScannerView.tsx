@@ -117,7 +117,7 @@ export function ScannerView({ setBarcode, setScannerEnabled, setLoading }) {
         onPress={() => setTorchOn((prev) => !prev)}>
         <View>
           <Icon name={torchOn ? "flash-sharp" : "flash-off-sharp"}
-            size={40}
+            size={34}
             color={torchOn ? '#FFD700' : '#808080'}
             style={{ borderColor: Colors.white }}
           />
@@ -134,7 +134,7 @@ export function ScannerView({ setBarcode, setScannerEnabled, setLoading }) {
         onPress={() => setScannerEnabled(false)}>
         <View>
           <Icon name="close-outline"
-            size={40}
+            size={34}
             color={Colors.light}
             style={{ borderColor: Colors.white }}
           />
@@ -179,9 +179,10 @@ export function ScannerView({ setBarcode, setScannerEnabled, setLoading }) {
 
 const styles = StyleSheet.create({
   container: {
-    //flex: 1,
     backgroundColor: Colors.darker,
     width: '100%',
+    paddingTop: 16,
+    paddingHorizontal: 'auto',
   },
   cameraContainer: {
     backgroundColor: Colors.darker,
@@ -189,9 +190,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   camera: {
-    //...StyleSheet.absoluteFillObject,
-    width: '90%',
-    height: 250,
+    width: '85%',
+    height: 220,
   },
   cameraButtons: {
     justifyContent: 'space-between',
