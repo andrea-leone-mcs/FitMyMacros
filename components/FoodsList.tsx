@@ -8,7 +8,7 @@ import SelectAmountDialog from "./SelectAmountDialog";
 import Ionicons from "@react-native-vector-icons/ionicons";
 import { roundToDecimalPlaces } from "../utils/utils";
 
-function FoodItem({ navigation, food, addCallback, removeCallback, editCallback }) {
+function FoodItem({ food, addCallback, removeCallback, editCallback }) {
   const [amount, setAmount] = useState(food.amount ? food.amount : 100);
   const [dialogVisible, setDialogVisible] = useState(false);
   const [trashBackgroundColor, setTrashBackgroundColor] = useState(Colors.dark);
@@ -78,7 +78,7 @@ function FoodItem({ navigation, food, addCallback, removeCallback, editCallback 
   );
 }
 
-function FoodsList({ navigation, foods, addCallback, removeCallback, editCallback, loading }) {
+function FoodsList({ foods, addCallback, removeCallback, editCallback, loading }) {
   return (
     loading ?
       <ActivityIndicator size="large" color={Colors.light} style={{ flex: 1, alignContent: 'center', justifyContent: 'center' }} />
@@ -87,7 +87,7 @@ function FoodsList({ navigation, foods, addCallback, removeCallback, editCallbac
         style={{ width: '90%' }}
         data={foods}
         renderItem={({ item }) => (
-          <FoodItem navigation={navigation} food={item} addCallback={addCallback} removeCallback={removeCallback} editCallback={editCallback} />
+          <FoodItem food={item} addCallback={addCallback} removeCallback={removeCallback} editCallback={editCallback} />
         )}
         keyExtractor={item => item.id}
       />
