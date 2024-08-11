@@ -34,7 +34,7 @@ function DailyDataHeader(props: { dailyStats: number[] }) {
 }
 
 
-function DailyMealsTable({ navigation, setDailyStats, day }) {
+function DailyMealsTable({ navigation, setDailyStats, day, recentFoods }) {
   const buttonStyles = StyleSheet.create({
     mealBtn: {
       width: 130,
@@ -145,7 +145,8 @@ function DailyMealsTable({ navigation, setDailyStats, day }) {
             navigation.navigate('Meal', {
               mealId: meals["Breakfast"],
               mealName: "Breakfast",
-              foods: mealsData["Breakfast"].foods
+              foods: mealsData["Breakfast"].foods,
+              recentFoods: recentFoods["Breakfast"],
             });
           }}>
             <ThemedText style={buttonStyles.mealBtnText}>Breakfast</ThemedText>
@@ -161,7 +162,8 @@ function DailyMealsTable({ navigation, setDailyStats, day }) {
             navigation.navigate('Meal', {
               mealId: meals["Lunch"],
               mealName: "Lunch",
-              foods: mealsData["Lunch"].foods
+              foods: mealsData["Lunch"].foods,
+              recentFoods: recentFoods["Lunch"],
             });
           }}>
             <ThemedText style={buttonStyles.mealBtnText}>Lunch</ThemedText>
@@ -179,7 +181,8 @@ function DailyMealsTable({ navigation, setDailyStats, day }) {
             navigation.navigate('Meal', {
               mealId: meals["Snacks"],
               mealName: "Snacks",
-              foods: mealsData["Snacks"].foods
+              foods: mealsData["Snacks"].foods,
+              recentFoods: recentFoods["Snacks"],
             });
           }}>
             <ThemedText style={buttonStyles.mealBtnText}>Snacks</ThemedText>
@@ -195,7 +198,8 @@ function DailyMealsTable({ navigation, setDailyStats, day }) {
             navigation.navigate('Meal', {
               mealId: meals["Dinner"],
               mealName: "Dinner",
-              foods: mealsData["Dinner"].foods
+              foods: mealsData["Dinner"].foods,
+              recentFoods: recentFoods["Dinner"],
             });
           }}>
             <ThemedText style={buttonStyles.mealBtnText}>Dinner</ThemedText>

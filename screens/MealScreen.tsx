@@ -16,9 +16,10 @@ function MealScreen({ navigation, route }): React.JSX.Element {
   const mealId = route.params?.mealId;
   const mealName = route.params?.mealName;
   const foodsParam = route.params?.foods;
+  const recentFoods = route.params?.recentFoods;
 
   const [foods, setFoods] = useState<object[]>(foodsParam);
-  const [searchFoods, setSearchFoods] = useState([]);
+  const [searchFoods, setSearchFoods] = useState<object[] | null>(null);
 
   const [barcode, setBarcode] = useState(undefined);
   const [scannerEnabled, setScannerEnabled] = useState(false);
@@ -26,6 +27,7 @@ function MealScreen({ navigation, route }): React.JSX.Element {
   const [scannedFoodObj, setScannedFoodObj] = useState<object | undefined>(undefined);
   const [selectAmountVisible, setSelectAmountVisible] = useState(false);
   const [scannedAmount, setScannedAmount] = useState(100);
+  const [shownRecentFoods, setShownRecentFoods] = useState([]);
 
   const db = useContext(DatabaseContext);
   if (!db) { throw new Error("Can't retrieve db from DatabaseContext"); }
@@ -33,17 +35,17 @@ function MealScreen({ navigation, route }): React.JSX.Element {
   const addCallback = (food) => {
     console.log(foods);
     setFoods([...foods, food]);
-    setSearchFoods([]);
+    setSearchFoods(null);
 
     addFoodTX(db, mealId, food);
-  }
+  };
 
   const removeCallback = (food) => {
     console.log("remove callback ", food.id);
     setFoods(foods.filter(f => f["id"] !== food["id"]));
 
     delFoodTX(db, mealId, food);
-  }
+  };
 
   const editCallback = (food) => {
     setFoods(foods.map(f => {
@@ -54,7 +56,13 @@ function MealScreen({ navigation, route }): React.JSX.Element {
     }));
 
     edtFoodTX(db, mealId, food);
-  }
+  };
+
+  useEffect(() => {
+    console.log('FOODS', foods);
+    console.log('RECENTS', recentFoods);
+    setShownRecentFoods(recentFoods.filter(food => !foods.find(f => f["id"] === food["id"])));
+  }, [foods]);
 
   useEffect(() => {
     setLoading(false);
@@ -78,7 +86,7 @@ function MealScreen({ navigation, route }): React.JSX.Element {
         fontWeight: 'bold',
         marginVertical: 20,
       }}>{mealName}</ThemedText>
-      <FoodsList navigation={navigation} foods={foods} addCallback={undefined} removeCallback={removeCallback} editCallback={editCallback} loading={false} />
+      <FoodsList foods={foods} addCallback={undefined} removeCallback={removeCallback} editCallback={editCallback} loading={false} />
       <View style={{
         height: 1,
         width: '90%',
@@ -96,12 +104,8 @@ function MealScreen({ navigation, route }): React.JSX.Element {
           :
           <>
             <SearchBar navigation={navigation} setSearchResults={setSearchFoods} setScannerEnabled={setScannerEnabled} enabled={!loading} setLoading={setLoading} />
-            {
-              selectAmountVisible ?
-                <SelectAmountDialog visible={selectAmountVisible} setVisible={setSelectAmountVisible} food={scannedFoodObj} amount={scannedAmount} setAmount={setScannedAmount} addCallback={addCallback} editCallback={editCallback} />
-                :
-                <FoodsList navigation={navigation} foods={searchFoods} addCallback={addCallback} removeCallback={undefined} editCallback={undefined} loading={loading} />
-            }
+            { selectAmountVisible && <SelectAmountDialog visible={true} setVisible={setSelectAmountVisible} food={scannedFoodObj} amount={scannedAmount} setAmount={setScannedAmount} addCallback={addCallback} editCallback={editCallback} />}
+            <FoodsList foods={searchFoods ? searchFoods : shownRecentFoods} addCallback={addCallback} removeCallback={undefined} editCallback={undefined} loading={loading} />
           </>
       }
     </ThemedView>

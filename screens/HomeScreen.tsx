@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useContext } from 'react';
 import { DailyDataHeader, DailyMealsTable } from '../components/DailyTable';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Icon from '@react-native-vector-icons/ionicons';
@@ -8,6 +8,7 @@ import { ThemedText, ThemedView } from '../components/ThemedComponents';
 import { CalendarDarkTheme } from '../styles/Themes';
 import { PanGestureHandler, ScrollView, State } from 'react-native-gesture-handler';
 import { Animated, Dimensions } from 'react-native'
+import { DatabaseContext, getRecentFoods } from '../storage/dbContext';
 
 const Tab = createBottomTabNavigator();
 
@@ -30,12 +31,21 @@ function DateRow({ date, setCalendarVisible, switchAnimation }): React.JSX.Eleme
   );
 }
 
-function BaseHomeScreen({ navigation }): React.JSX.Element {
+function HomeScreenView({ navigation, route }): React.JSX.Element {
   const [dailyStats, setDailyStats] = useState<number[]>([0, 0, 0, 0]);
   const [selectedDay, setSelectedDay] = useState<Date>(new Date());
   const [calendarVisible, setCalendarVisible] = useState<boolean>(false);
+  const [recentFoods, setRecentFoods] = useState({ 'Breakfast': [], 'Lunch': [], 'Snacks': [], 'Dinner': [] });
+
+  const db = useContext(DatabaseContext);
   const translateX = new Animated.Value(0);
   const screenWidth = Dimensions.get('window').width;
+
+  if (!db) { throw new Error("Can't retrieve db from DatabaseContext"); }
+
+  useEffect(() => {
+    (async () => setRecentFoods(await getRecentFoods(db)))();
+  }, [dailyStats]);
 
   const onPanGestureEvent = Animated.event(
     [{ nativeEvent: { translationX: translateX } }],
@@ -93,19 +103,18 @@ function BaseHomeScreen({ navigation }): React.JSX.Element {
             }
           } markedDates={{
             [selectedDay.toISOString().split('T')[0]]: { selected: true }
-          }} 
-          
-          />
+          }}
+
+        />
         : <DateRow date={selectedDay} setCalendarVisible={setCalendarVisible} switchAnimation={onSwipe} />
       }
       <ScrollView>
-
         <PanGestureHandler
           onGestureEvent={onPanGestureEvent}
           onHandlerStateChange={onHandlerStateChange} >
           <Animated.View style={{ transform: [{ translateX }] }}>
             <DailyDataHeader dailyStats={dailyStats} />
-            <DailyMealsTable navigation={navigation} setDailyStats={setDailyStats} day={selectedDay} />
+            <DailyMealsTable navigation={navigation} setDailyStats={setDailyStats} day={selectedDay} recentFoods={recentFoods} />
           </Animated.View>
         </PanGestureHandler>
       </ScrollView>
@@ -118,7 +127,7 @@ function HomeScreen({ navigation }): React.JSX.Element {
     <Tab.Navigator initialRouteName="Home">
       <Tab.Screen
         name="Home"
-        component={BaseHomeScreen}
+        component={HomeScreenView}
         options={{
           headerShown: false,
           tabBarIcon: ({ focused, size }) => (
