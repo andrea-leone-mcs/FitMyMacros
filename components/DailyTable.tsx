@@ -4,10 +4,10 @@ import { ThemedText } from './ThemedComponents';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import Colors from '../styles/Colors';
 import { useCallback, useContext, useEffect, useState } from 'react';
-import { DatabaseContext, getMealData } from '../storage/dbContext';
+import { DatabaseContext, getMealData, getMeals } from '../storage/dbContext';
 import { roundToDecimalPlaces } from '../utils/utils';
 
-
+// Displays the daily stats in the Home Screen
 function DailyDataHeader(props: { dailyStats: number[] }) {
   return (
     <View style={[tableStyles.container]}>
@@ -33,73 +33,18 @@ function DailyDataHeader(props: { dailyStats: number[] }) {
   );
 }
 
-
+// Displays the daily meals in the Home Screen
 function DailyMealsTable({ navigation, setDailyStats, day, recentFoods }) {
-  const buttonStyles = StyleSheet.create({
-    mealBtn: {
-      width: 130,
-      height: 130,
-      justifyContent: 'center',
-      alignItems: 'center',
-      backgroundColor: Colors.lessDark,
-      borderRadius: 8,
-      marginVertical: 8,
-      borderWidth: 1,
-      borderColor: Colors.lessLight,
-    },
-    mealBtnText: {
-      color: 'white',
-      fontSize: 20,
-      fontWeight: 'bold',
-    },
-    mealBtnInfo: {
-      color: 'white',
-      fontSize: 12,
-    }
-  });
-
   const db = useContext(DatabaseContext);
+  // Breakfast, Lunch, Snacks, Dinner
   const [meals, setMeals] = useState<{ [key: string]: number } | null>(null);
+  // Old data for each meal
   const [mealsData, setMealsData] = useState<{ [key: number]: object } | null>(null);
 
-  if (!db) {
-    throw new Error("Can't retrieve db from DatabaseContext");
-  }
+  if (!db) { throw new Error("Can't retrieve db from DatabaseContext"); }
 
   useEffect(() => {
-    db.transaction(tx => {
-      const mealDate = day.toISOString().split('T')[0];
-      tx.executeSql("SELECT * FROM meals WHERE date = ?", [mealDate],
-        (tx, results) => {
-          
-          const updateMeals = rows => {
-            let tmp = {};
-            for (let i = 0; i < rows.length; i++)
-              tmp[rows.item(i).name] = rows.item(i).id;
-            setMeals(tmp);
-          }
-
-          console.log("SELECT meals success: ", results.rows.length, " results.");
-          if (results.rows.length == 0) {
-            tx.executeSql("INSERT INTO meals(name, date) VALUES (?, ?), (?, ?), (?, ?), (?, ?)",
-              ["Breakfast", mealDate, "Lunch", mealDate, "Snacks", mealDate, "Dinner", mealDate],
-              (tx, results) => {
-                console.log("INSERT meals success: ", results);
-                tx.executeSql("SELECT * FROM meals WHERE date = ?", [mealDate],
-                  (tx, results) => {
-                    console.log("SELECT2 meals success: ", results.rows.length, " results.");
-                    updateMeals(results.rows);
-                  },
-                  error => console.log("Select2 error: ", error)
-                );
-              }, error => console.log("Insertion error: ", error));
-          } else {
-            updateMeals(results.rows);
-          }
-        },
-        error => console.log("Select error: ", error)
-      );
-    });
+    (async () => setMeals(await getMeals(db, day)))();
   }, [day]);
 
   useFocusEffect(
@@ -114,7 +59,6 @@ function DailyMealsTable({ navigation, setDailyStats, day, recentFoods }) {
           };
         }
         setMealsData(tmp);
-        console.log('meals', meals);
         console.log('mealsData', tmp);
       }
 
@@ -255,6 +199,29 @@ const tableStyles = StyleSheet.create({
     textAlign: 'center',
     fontSize: 16,
   },
+});
+
+const buttonStyles = StyleSheet.create({
+  mealBtn: {
+    width: 130,
+    height: 130,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: Colors.lessDark,
+    borderRadius: 8,
+    marginVertical: 8,
+    borderWidth: 1,
+    borderColor: Colors.lessLight,
+  },
+  mealBtnText: {
+    color: 'white',
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+  mealBtnInfo: {
+    color: 'white',
+    fontSize: 12,
+  }
 });
 
 export { DailyDataHeader, DailyMealsTable };

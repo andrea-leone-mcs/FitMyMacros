@@ -58,6 +58,40 @@ const DatabaseContextProvider = ({ children }) => {
   );
 };
 
+const getMeals = async (db: SQLite.SQLiteDatabase, day: Date) => {
+  let res = {};
+
+  await db.transaction(tx => {
+    const mealDate = day.toISOString().split('T')[0];
+    tx.executeSql("SELECT * FROM meals WHERE date = ?", [mealDate],
+      (tx, results) => {
+        console.log("SELECT meals success: ", results.rows.length, " results.");
+        if (results.rows.length == 0) {
+          tx.executeSql("INSERT INTO meals(name, date) VALUES (?, ?), (?, ?), (?, ?), (?, ?)",
+            ["Breakfast", mealDate, "Lunch", mealDate, "Snacks", mealDate, "Dinner", mealDate],
+            (tx, results) => {
+              console.log("INSERT meals success: ", results);
+              tx.executeSql("SELECT * FROM meals WHERE date = ?", [mealDate],
+                (tx, results) => {
+                  console.log("SELECT2 meals success: ", results.rows.length, " results.");
+                  for (let i = 0; i < results.rows.length; i++)
+                    res[results.rows.item(i).name] = results.rows.item(i).id;
+                },
+                error => console.log("Select2 error: ", error)
+              );
+            }, error => console.log("Insertion error: ", error));
+        } else {
+          for (let i = 0; i < results.rows.length; i++)
+            res[results.rows.item(i).name] = results.rows.item(i).id;
+        }
+      },
+      error => console.log("Select error: ", error)
+    );
+  });
+
+  return res;
+}
+
 const getRecentFoods = async (db: SQLite.SQLiteDatabase) => {
   if (!db) { throw new Error("Can't retrieve db from DatabaseContext"); }
 
@@ -77,9 +111,9 @@ const getRecentFoods = async (db: SQLite.SQLiteDatabase) => {
           foods_per_meal[meal] = [...foods_per_meal[meal]];
           all_foods = [...all_foods, ...foods_per_meal[meal]];
         }
-        const in_list = "("+all_foods.map(() => "?").join(",")+")";
-        
-        tx.executeSql("SELECT id, name, brand, kcals, proteins, carbs, fats FROM foods WHERE id IN "+in_list, all_foods,
+        const in_list = "(" + all_foods.map(() => "?").join(",") + ")";
+
+        tx.executeSql("SELECT id, name, brand, kcals, proteins, carbs, fats FROM foods WHERE id IN " + in_list, all_foods,
           (tx, results) => {
             console.log("SELECT foods success: ", results.rows.length, " results.");
             let foods = {};
@@ -124,8 +158,8 @@ const getMealData = async (db: SQLite.SQLiteDatabase, mealId: number) => {
         const eaten_ids: string[] = Object.keys(eaten);
         console.log('eaten_ids', eaten_ids);
         if (eaten_ids.length > 0) {
-          const in_list = "("+eaten_ids.map(() => "?").join(",")+")";
-          tx.executeSql("SELECT id, name, brand, kcals, proteins, carbs, fats FROM foods WHERE id IN "+in_list, eaten_ids,
+          const in_list = "(" + eaten_ids.map(() => "?").join(",") + ")";
+          tx.executeSql("SELECT id, name, brand, kcals, proteins, carbs, fats FROM foods WHERE id IN " + in_list, eaten_ids,
             (tx, results) => {
               console.log("SELECT foods success: ", results.rows.length, " results.");
               for (let i = 0; i < results.rows.length; i++) {
@@ -136,12 +170,12 @@ const getMealData = async (db: SQLite.SQLiteDatabase, mealId: number) => {
               for (const key in eaten) {
                 const amount = eaten[key];
                 const food = foods[key];
-                
+
                 stats[0] += food.kcals * amount * 0.01;
                 stats[1] += food.carbs * amount * 0.01;
                 stats[2] += food.proteins * amount * 0.01;
                 stats[3] += food.fats * amount * 0.01;
-                
+
                 foods[key].amount = amount;
               }
             },
@@ -205,4 +239,4 @@ const edtFoodTX = (db, mealId, food) => {
   });
 }
 
-export { DatabaseContext, DatabaseContextProvider, getRecentFoods, getMealData, addFoodTX, delFoodTX, edtFoodTX };
+export { DatabaseContext, DatabaseContextProvider, getMeals, getRecentFoods, getMealData, addFoodTX, delFoodTX, edtFoodTX };
