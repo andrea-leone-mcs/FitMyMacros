@@ -10,13 +10,15 @@ const jsonToFood = (jsonFood: object) => {
   const carbs = roundToDecimalPlaces(parseFloat(nutriments["carbohydrates_100g"]), 1)
   const fats = roundToDecimalPlaces(parseFloat(nutriments["fat_100g"]), 1)
   const proteins = roundToDecimalPlaces(parseFloat(nutriments["proteins_100g"]), 1)
+  const brand = jsonFood["brands"].length > 0 ? jsonFood["brands"] : null;
   return {
     id: id,
     name: productName,
     kcals: kcals,
     carbs: carbs,
     fats: fats,
-    proteins: proteins
+    proteins: proteins,
+    brand: brand,
   };
 }
 
