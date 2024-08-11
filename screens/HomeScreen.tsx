@@ -6,29 +6,24 @@ import Colors from '../styles/Colors';
 import { Calendar } from 'react-native-calendars';
 import { ThemedText, ThemedView } from '../components/ThemedComponents';
 import { CalendarDarkTheme } from '../styles/Themes';
-import { GestureHandlerRootView, PanGestureHandler, State } from 'react-native-gesture-handler';
-import Swipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
+import { PanGestureHandler, ScrollView, State } from 'react-native-gesture-handler';
 import { Animated, Dimensions } from 'react-native'
 
 const Tab = createBottomTabNavigator();
 
-function DateRow({ date, setDate, setCalendarVisible }): React.JSX.Element {
+function DateRow({ date, setCalendarVisible, switchAnimation }): React.JSX.Element {
   const options: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short', year: 'numeric' };
   return (
     <ThemedView style={{ alignContent: 'center', flexDirection: 'row', alignItems: 'center', paddingTop: 10 }}>
       <ThemedView style={{ flex: 1, alignItems: 'center' }}>
         <Icon name="chevron-back" color={Colors.dark} size={30} onPress={() => {
-          const newDate = new Date(date);
-          newDate.setDate(newDate.getDate() - 1);
-          setDate(newDate);
+          switchAnimation('Right');
         }} />
       </ThemedView>
       <ThemedText style={{ fontSize: 16 }} onPress={() => { setCalendarVisible(true); }}>{date.toLocaleDateString('en-GB', options)}</ThemedText>
       <ThemedView style={{ flex: 1, alignItems: 'center' }}>
         <Icon name="chevron-forward" color={Colors.dark} size={30} onPress={() => {
-          const newDate = new Date(date);
-          newDate.setDate(newDate.getDate() + 1);
-          setDate(newDate);
+          switchAnimation('Left');
         }} />
       </ThemedView>
     </ThemedView>
@@ -40,45 +35,46 @@ function BaseHomeScreen({ navigation }): React.JSX.Element {
   const [selectedDay, setSelectedDay] = useState<Date>(new Date());
   const [calendarVisible, setCalendarVisible] = useState<boolean>(false);
   const translateX = new Animated.Value(0);
-  const direction = useRef('None');
   const screenWidth = Dimensions.get('window').width;
 
   const onPanGestureEvent = Animated.event(
     [{ nativeEvent: { translationX: translateX } }],
     { useNativeDriver: true }
   );
-  const onHandlerStateChange = (event) => {
-    if (event.nativeEvent.state === State.END) {
-      const { translationX: transX } = event.nativeEvent;
-      direction.current = transX > 0 ? 'Right' : 'Left';
+  const onSwipe = (direction) => {
+    console.log('Swiped ' + direction);
+    // Animate out the current table
+    Animated.timing(translateX, {
+      toValue: direction === 'Right' ? screenWidth : -screenWidth,
+      duration: 200,
+      useNativeDriver: true,
+    }).start(() => {
+      // Reset the position of the new table off-screen
+      translateX.setValue(direction === 'Right' ? -screenWidth : screenWidth);
 
-      // Animate out the current table
+      // Animate in the new table
       Animated.timing(translateX, {
-        toValue: transX > 0 ? screenWidth : -screenWidth,
+        toValue: 0,
         duration: 200,
         useNativeDriver: true,
       }).start(() => {
-        // Reset the position of the new table off-screen
-        translateX.setValue(transX > 0 ? -screenWidth : screenWidth);
-
-        // Animate in the new table
-        Animated.timing(translateX, {
-          toValue: 0,
-          duration: 200,
-          useNativeDriver: true,
-        }).start(() => {
-          // Update the data based on the swipe direction
-          if (direction.current === 'Right') {
-            const newDate = new Date(selectedDay);
-            newDate.setDate(newDate.getDate() - 1);
-            setSelectedDay(newDate);
-          } else if (direction.current === 'Left') {
-            const newDate = new Date(selectedDay);
-            newDate.setDate(newDate.getDate() + 1);
-            setSelectedDay(newDate);
-          }
-        });
+        // Update the data based on the swipe direction
+        if (direction === 'Right') {
+          const newDate = new Date(selectedDay);
+          newDate.setDate(newDate.getDate() - 1);
+          setSelectedDay(newDate);
+        } else if (direction === 'Left') {
+          const newDate = new Date(selectedDay);
+          newDate.setDate(newDate.getDate() + 1);
+          setSelectedDay(newDate);
+        }
       });
+    });
+  };
+  const onHandlerStateChange = (event) => {
+    if (event.nativeEvent.state === State.END) {
+      const { translationX: transX } = event.nativeEvent;
+      onSwipe(transX > 0 ? 'Right' : 'Left');
     }
   };
 
@@ -97,17 +93,22 @@ function BaseHomeScreen({ navigation }): React.JSX.Element {
             }
           } markedDates={{
             [selectedDay.toISOString().split('T')[0]]: { selected: true }
-          }} />
-        : <DateRow date={selectedDay} setDate={setSelectedDay} setCalendarVisible={setCalendarVisible} />
+          }} 
+          
+          />
+        : <DateRow date={selectedDay} setCalendarVisible={setCalendarVisible} switchAnimation={onSwipe} />
       }
-      <PanGestureHandler
-        onGestureEvent={onPanGestureEvent}
-        onHandlerStateChange={onHandlerStateChange} >
-        <Animated.View style={{ transform: [{ translateX }] }}>
-          <DailyDataHeader dailyStats={dailyStats} />
-          <DailyMealsTable navigation={navigation} setDailyStats={setDailyStats} day={selectedDay} />
-        </Animated.View>
-      </PanGestureHandler>
+      <ScrollView>
+
+        <PanGestureHandler
+          onGestureEvent={onPanGestureEvent}
+          onHandlerStateChange={onHandlerStateChange} >
+          <Animated.View style={{ transform: [{ translateX }] }}>
+            <DailyDataHeader dailyStats={dailyStats} />
+            <DailyMealsTable navigation={navigation} setDailyStats={setDailyStats} day={selectedDay} />
+          </Animated.View>
+        </PanGestureHandler>
+      </ScrollView>
     </>
   );
 }
