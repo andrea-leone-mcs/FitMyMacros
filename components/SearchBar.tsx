@@ -5,7 +5,8 @@ import Colors from "../styles/Colors";
 import { findMatchingFoods } from "../apis/apis";
 import { ThemedView } from "./ThemedComponents";
 
-const SearchBar = ({ navigation, setSearchResults, setScannerEnabled, enabled, setLoading }) => {
+const SearchBar = ({ setSearchResults, setScannerEnabled, enabled, setLoading }) => {
+  // has the search bar been clicked? - used to show/hide buttons
   const [clicked, setClicked] = useState(false);
   const [searchPhrase, setSearchPhrase] = useState("");
 
@@ -13,27 +14,20 @@ const SearchBar = ({ navigation, setSearchResults, setScannerEnabled, enabled, s
     <>
       <ThemedView style={styles.container}>
         <ThemedView style={clicked ? styles.searchBar__clicked : styles.searchBar__unclicked}>
-          <Ionicons
-            name="search-outline"
-            size={20}
-            color={Colors.light}
-            style={{ marginLeft: 10, marginRight: 5 }}
-          />
+          <Ionicons name="search-outline" size={20} color={Colors.light} style={{ marginLeft: 10, marginRight: 5 }} />
           <TextInput
             style={styles.input}
             placeholder="Search Food..."
             value={searchPhrase}
             onChangeText={setSearchPhrase}
-            onFocus={() => {
-              setClicked(true);
-            }}
+            returnKeyType="search"
+            onFocus={() => setClicked(true)}
             onSubmitEditing={async () => {
               setLoading(true);
               const matches = await findMatchingFoods(searchPhrase);
               console.log(matches);
               setSearchResults(matches);
             }}
-            returnKeyType="search"
           />
           {clicked && (
             <Ionicons
@@ -41,10 +35,7 @@ const SearchBar = ({ navigation, setSearchResults, setScannerEnabled, enabled, s
               size={20}
               color={Colors.light}
               style={{ padding: 1, start: 0, marginRight: 10 }}
-              onPress={() => {
-                if (!enabled) return;
-                setSearchPhrase("");
-              }}
+              onPress={() => { if (enabled) setSearchPhrase(""); }}
             />
           )}
         </ThemedView>
@@ -57,7 +48,7 @@ const SearchBar = ({ navigation, setSearchResults, setScannerEnabled, enabled, s
                 if (!enabled) return;
                 Keyboard.dismiss();
                 setClicked(false);
-                setSearchResults([]);
+                setSearchResults(null);
               }}
             />
             :
@@ -66,10 +57,7 @@ const SearchBar = ({ navigation, setSearchResults, setScannerEnabled, enabled, s
               size={36}
               color={Colors.light}
               style={{ paddingStart: 15, paddingEnd: 15 }}
-              onPress={() => {
-                if (!enabled) return;
-                setScannerEnabled(true);
-              }}
+              onPress={() => { if(enabled) setScannerEnabled(true); }}
             />
           }
         </ThemedView>

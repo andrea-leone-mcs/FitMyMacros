@@ -1,51 +1,43 @@
-import { FlatList, Swipeable, TextInput } from "react-native-gesture-handler";
+import { FlatList, } from "react-native-gesture-handler";
 import { ThemedText, ThemedView } from "./ThemedComponents";
-import { ActivityIndicator, Keyboard, Pressable, StyleSheet, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, StyleSheet, TouchableOpacity, View } from "react-native";
 import Colors from "../styles/Colors";
-import DialogContainer from "react-native-dialog/lib/Container";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import SelectAmountDialog from "./SelectAmountDialog";
 import Ionicons from "@react-native-vector-icons/ionicons";
 import { roundToDecimalPlaces } from "../utils/utils";
 
+// single item in the list
+// buttons are displayed based on the callbacks passed as props
 function FoodItem({ food, addCallback, removeCallback, editCallback }) {
+
+  // amount of food, multiplied the stats per 100g in order to display the correct stats
+  // defaults to 100 for foods with no specified amount
   const [amount, setAmount] = useState(food.amount ? food.amount : 100);
+  // is the dialog to select the amount of food visible?
   const [dialogVisible, setDialogVisible] = useState(false);
-  const [trashBackgroundColor, setTrashBackgroundColor] = useState(Colors.dark);
+  // color of the trash icon - just for a nice effect
+  const [trashBgColor, setTrashBgColor] = useState(Colors.dark);
 
   return (
     <>
       {(addCallback || editCallback) && <SelectAmountDialog food={food} visible={dialogVisible} setVisible={setDialogVisible} amount={amount} setAmount={setAmount} addCallback={addCallback} editCallback={editCallback} />}
-      <ThemedView style={[styles.listItem, styles.row, {
-        marginBottom: 10,
-        paddingVertical: 8,
-        paddingLeft: 4
-      }]}>
+      <ThemedView style={[styles.listItem, styles.row, { marginBottom: 10, paddingVertical: 8, paddingLeft: 4 }]}>
         {
           removeCallback &&
-          <ThemedView style={{ backgroundColor: trashBackgroundColor, padding: 6 }}>
-            <Ionicons
-              name="trash-outline"
-              size={24}
-              color={Colors.light}
-              onPressIn={() => setTrashBackgroundColor(Colors.darker)}
-              onPressOut={() => setTrashBackgroundColor(Colors.dark)}
+          <ThemedView style={{ backgroundColor: trashBgColor, padding: 6 }}>
+            <Ionicons name="trash-outline" size={24} color={Colors.light}
+              onPressIn={() => setTrashBgColor(Colors.darker)}
+              onPressOut={() => setTrashBgColor(Colors.dark)}
               onPress={() => removeCallback(food)} />
           </ThemedView>
         }
-        <TouchableOpacity style={{ flex: 1 }} onPress={() => {
-          if (addCallback || editCallback)
-            setDialogVisible(true);
-        }}
-        >
+        <TouchableOpacity style={{ flex: 1 }} onPress={() => { if (addCallback || editCallback) setDialogVisible(true); }}>
           <ThemedView style={{ backgroundColor: Colors.dark, paddingHorizontal: 10, }}>
             <ThemedView style={{ backgroundColor: Colors.dark, justifyContent: "space-between", marginBottom: 4 }}>
               <ThemedText style={{ fontSize: 18, width: '75%' }}>{food.name}</ThemedText>
               {
-                food.brand &&
-                <ThemedText style={{ verticalAlign: 'middle' }}>
-                  {food.brand}
-                </ThemedText>
+                food.brand && <ThemedText style={{ verticalAlign: 'middle' }}>{food.brand}</ThemedText>
               }
             </ThemedView>
             <View style={styles.line} />
@@ -64,21 +56,19 @@ function FoodItem({ food, addCallback, removeCallback, editCallback }) {
                   <ThemedText>{roundToDecimalPlaces(amount * 0.01 * food.fats, 1)}</ThemedText>
                 </ThemedView>
               </ThemedView>
-              { food.amount &&
-                (<ThemedText style={{ fontSize: 14, verticalAlign: 'middle' }}>
-                  {food.amount} grams
-                </ThemedText>)
+              {
+                food.amount && <ThemedText style={{ fontSize: 14, verticalAlign: 'middle' }}>{food.amount} grams</ThemedText>
               }
             </ThemedView>
           </ThemedView>
         </TouchableOpacity>
-
       </ThemedView>
     </>
   );
 }
 
 function FoodsList({ foods, addCallback, removeCallback, editCallback, loading }) {
+  // actual list of foods
   return (
     loading ?
       <ActivityIndicator size="large" color={Colors.light} style={{ flex: 1, alignContent: 'center', justifyContent: 'center' }} />

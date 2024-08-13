@@ -12,7 +12,7 @@ import SelectAmountDialog from "../components/SelectAmountDialog";
 const PROTEIN_BISCUIT_BARCODE = '5055534301012';
 
 
-function MealScreen({ navigation, route }): React.JSX.Element {
+function MealScreen({ route }): React.JSX.Element {
   const mealId = route.params?.mealId;
   const mealName = route.params?.mealName;
   const foodsParam = route.params?.foods;
@@ -103,7 +103,7 @@ function MealScreen({ navigation, route }): React.JSX.Element {
           <ScannerView setBarcode={setBarcode} setScannerEnabled={setScannerEnabled} setLoading={setLoading} />
           :
           <>
-            <SearchBar navigation={navigation} setSearchResults={setSearchFoods} setScannerEnabled={setScannerEnabled} enabled={!loading} setLoading={setLoading} />
+            <SearchBar setSearchResults={setSearchFoods} setScannerEnabled={setScannerEnabled} enabled={!loading} setLoading={setLoading} />
             { selectAmountVisible && <SelectAmountDialog visible={true} setVisible={setSelectAmountVisible} food={scannedFoodObj} amount={scannedAmount} setAmount={setScannedAmount} addCallback={addCallback} editCallback={editCallback} />}
             <FoodsList foods={searchFoods ? searchFoods : shownRecentFoods} addCallback={addCallback} removeCallback={undefined} editCallback={undefined} loading={loading} />
           </>

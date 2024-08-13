@@ -7,7 +7,7 @@ import { useCallback, useContext, useEffect, useState } from 'react';
 import { DatabaseContext, getMealData, getMeals } from '../storage/dbContext';
 import { roundToDecimalPlaces } from '../utils/utils';
 
-// Displays the daily stats in the Home Screen
+// Displays the daily stats in the Home Screen (kcals, carbs, proteins, fats for that day)
 function DailyDataHeader(props: { dailyStats: number[] }) {
   return (
     <View style={[tableStyles.container]}>
@@ -44,11 +44,15 @@ function DailyMealsTable({ navigation, setDailyStats, day, recentFoods }) {
   if (!db) { throw new Error("Can't retrieve db from DatabaseContext"); }
 
   useEffect(() => {
+    // retrieve the meals for that day
+    // retrieving the 4 meals in the db is useful to take into account also the date of the meals
     (async () => setMeals(await getMeals(db, day)))();
   }, [day]);
 
+  // perform action when the component is focused
   useFocusEffect(
     useCallback(() => {
+      // update data about the meals with the new added data
       const updateMealsData = async () => {
         let tmp = {};
         for (const key in meals) {
@@ -62,11 +66,11 @@ function DailyMealsTable({ navigation, setDailyStats, day, recentFoods }) {
         console.log('mealsData', tmp);
       }
 
-      if (meals)
-        updateMealsData();
+      if (meals) updateMealsData();
     }, [meals])
   );
 
+  // when the data about the meals is updated, update the daily stats
   useEffect(() => {
     if (mealsData) {
       let stats: number[] = [0, 0, 0, 0];
@@ -86,12 +90,7 @@ function DailyMealsTable({ navigation, setDailyStats, day, recentFoods }) {
         <View style={[tableStyles.cell, tableStyles.centerAlignedCell]}>
           <TouchableOpacity style={buttonStyles.mealBtn} onPress={() => {
             console.log('navigating to Meal screen ', meals["Breakfast"]);
-            navigation.navigate('Meal', {
-              mealId: meals["Breakfast"],
-              mealName: "Breakfast",
-              foods: mealsData["Breakfast"].foods,
-              recentFoods: recentFoods["Breakfast"],
-            });
+            navigation.navigate('Meal', { mealId: meals["Breakfast"], mealName: "Breakfast", foods: mealsData["Breakfast"].foods, recentFoods: recentFoods["Breakfast"], });
           }}>
             <ThemedText style={buttonStyles.mealBtnText}>Breakfast</ThemedText>
             <ThemedText style={buttonStyles.mealBtnInfo}>{roundToDecimalPlaces(mealsData["Breakfast"].stats[0], 1)} Kcal</ThemedText>
@@ -103,12 +102,7 @@ function DailyMealsTable({ navigation, setDailyStats, day, recentFoods }) {
         <View style={[tableStyles.cell, tableStyles.centerAlignedCell]}>
           <TouchableOpacity style={buttonStyles.mealBtn} onPress={() => {
             console.log('navigating to Meal screen ', meals["Lunch"]);
-            navigation.navigate('Meal', {
-              mealId: meals["Lunch"],
-              mealName: "Lunch",
-              foods: mealsData["Lunch"].foods,
-              recentFoods: recentFoods["Lunch"],
-            });
+            navigation.navigate('Meal', { mealId: meals["Lunch"], mealName: "Lunch", foods: mealsData["Lunch"].foods, recentFoods: recentFoods["Lunch"], });
           }}>
             <ThemedText style={buttonStyles.mealBtnText}>Lunch</ThemedText>
             <ThemedText style={buttonStyles.mealBtnInfo}>{roundToDecimalPlaces(mealsData["Lunch"].stats[0], 1)} Kcal</ThemedText>
@@ -122,12 +116,7 @@ function DailyMealsTable({ navigation, setDailyStats, day, recentFoods }) {
         <View style={[tableStyles.cell, tableStyles.centerAlignedCell]}>
           <TouchableOpacity style={buttonStyles.mealBtn} onPress={() => {
             console.log('navigating to Meal screen ', meals["Snacks"]);
-            navigation.navigate('Meal', {
-              mealId: meals["Snacks"],
-              mealName: "Snacks",
-              foods: mealsData["Snacks"].foods,
-              recentFoods: recentFoods["Snacks"],
-            });
+            navigation.navigate('Meal', { mealId: meals["Snacks"], mealName: "Snacks", foods: mealsData["Snacks"].foods, recentFoods: recentFoods["Snacks"], });
           }}>
             <ThemedText style={buttonStyles.mealBtnText}>Snacks</ThemedText>
             <ThemedText style={buttonStyles.mealBtnInfo}>{roundToDecimalPlaces(mealsData["Snacks"].stats[0], 1)} Kcal</ThemedText>
@@ -139,12 +128,7 @@ function DailyMealsTable({ navigation, setDailyStats, day, recentFoods }) {
         <View style={[tableStyles.cell, tableStyles.centerAlignedCell]}>
           <TouchableOpacity style={buttonStyles.mealBtn} onPress={() => {
             console.log('navigating to Meal screen ', meals["Dinner"]);
-            navigation.navigate('Meal', {
-              mealId: meals["Dinner"],
-              mealName: "Dinner",
-              foods: mealsData["Dinner"].foods,
-              recentFoods: recentFoods["Dinner"],
-            });
+            navigation.navigate('Meal', { mealId: meals["Dinner"], mealName: "Dinner", foods: mealsData["Dinner"].foods, recentFoods: recentFoods["Dinner"], });
           }}>
             <ThemedText style={buttonStyles.mealBtnText}>Dinner</ThemedText>
             <ThemedText style={buttonStyles.mealBtnInfo}>{roundToDecimalPlaces(mealsData["Dinner"].stats[0], 1)} Kcal</ThemedText>

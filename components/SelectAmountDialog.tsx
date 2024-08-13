@@ -1,15 +1,14 @@
-import { FlatList, TextInput } from "react-native-gesture-handler";
-import { ThemedText, ThemedView } from "./ThemedComponents";
-import { Keyboard, StyleSheet, TouchableOpacity, View } from "react-native";
+import { TextInput } from "react-native-gesture-handler";
+import { ThemedText } from "./ThemedComponents";
+import { Keyboard, StyleSheet, View } from "react-native";
 import Colors from "../styles/Colors";
 import DialogContainer from "react-native-dialog/lib/Container";
 import { useEffect, useState } from "react";
 import DialogButton from "react-native-dialog/lib/Button";
-import DialogInput from "react-native-dialog/lib/Input";
 import { roundToDecimalPlaces } from "../utils/utils";
 import { AddButton, RemoveButton } from "./Buttons";
 
-
+// Dialog in the middle of the screen to select the amount of food
 function SelectAmountDialog({ food, visible, setVisible, amount, setAmount, addCallback, editCallback }) {
   const [localAmount, setLocalAmount] = useState(amount);
 
