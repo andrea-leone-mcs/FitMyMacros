@@ -9,29 +9,40 @@ import { ScannerView } from "../components/ScannerView";
 import { findFoodById } from "../apis/apis";
 import SelectAmountDialog from "../components/SelectAmountDialog";
 
-const PROTEIN_BISCUIT_BARCODE = '5055534301012';
 
-
+// Screen for a single meal
 function MealScreen({ route }): React.JSX.Element {
+  // retrieve from the route the meal id and name, the eaten foods and all the recent foods for that type (name) of meal
   const mealId = route.params?.mealId;
   const mealName = route.params?.mealName;
   const foodsParam = route.params?.foods;
   const recentFoods = route.params?.recentFoods;
 
+  // foods eaten in the meal
   const [foods, setFoods] = useState<object[]>(foodsParam);
+  // foods found by the search bar
   const [searchFoods, setSearchFoods] = useState<object[] | null>(null);
-
-  const [barcode, setBarcode] = useState(undefined);
-  const [scannerEnabled, setScannerEnabled] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [scannedFoodObj, setScannedFoodObj] = useState<object | undefined>(undefined);
-  const [selectAmountVisible, setSelectAmountVisible] = useState(false);
-  const [scannedAmount, setScannedAmount] = useState(100);
+  // foods that can be added to the meal (recent foods not already in the meal)
   const [shownRecentFoods, setShownRecentFoods] = useState([]);
 
+  // barcode of the scanned food
+  const [barcode, setBarcode] = useState(undefined);
+  // scanner status
+  const [scannerEnabled, setScannerEnabled] = useState(false);
+  // loading status
+  const [loading, setLoading] = useState(false);
+  // scanned food object (retrieved from barcode)
+  const [scannedFoodObj, setScannedFoodObj] = useState<object | undefined>(undefined);
+  // is the dialog to select the amount of the scanned food visible? this is used for the scanned food only
+  const [selectAmountVisible, setSelectAmountVisible] = useState(false);
+  // amount of the scanned food
+  const [scannedAmount, setScannedAmount] = useState(100);
+
+  // database context
   const db = useContext(DatabaseContext);
   if (!db) { throw new Error("Can't retrieve db from DatabaseContext"); }
 
+  // add a food to the meal (first in the state, then in the db)
   const addCallback = (food) => {
     console.log(foods);
     setFoods([...foods, food]);
@@ -40,6 +51,7 @@ function MealScreen({ route }): React.JSX.Element {
     addFoodTX(db, mealId, food);
   };
 
+  // remove a food from the meal (first in the state, then in the db)
   const removeCallback = (food) => {
     console.log("remove callback ", food.id);
     setFoods(foods.filter(f => f["id"] !== food["id"]));
@@ -47,6 +59,7 @@ function MealScreen({ route }): React.JSX.Element {
     delFoodTX(db, mealId, food);
   };
 
+  // edit a food in the meal (first in the state, then in the db)
   const editCallback = (food) => {
     setFoods(foods.map(f => {
       if (f["id"] === food["id"]) {
@@ -58,6 +71,7 @@ function MealScreen({ route }): React.JSX.Element {
     edtFoodTX(db, mealId, food);
   };
 
+  // update the list of recent foods that can be added to the meal
   useEffect(() => {
     console.log('FOODS', foods);
     console.log('RECENTS', recentFoods);
@@ -68,13 +82,14 @@ function MealScreen({ route }): React.JSX.Element {
     setLoading(false);
   }, [searchFoods]);
 
+  // when a barcode is scanned, retrieve the food object from the barcode
   useEffect(() => {
     if (barcode) {
       findFoodById(barcode).then((food: object) => {
         setScannedFoodObj(food);
-        setBarcode(undefined);
         setLoading(false);
         setSelectAmountVisible(true);
+        setBarcode(undefined);
       });
     }
   }, [barcode]);
@@ -93,11 +108,7 @@ function MealScreen({ route }): React.JSX.Element {
         borderBottomColor: Colors.light,
         borderBottomWidth: 1,
       }} />
-      {/* {<ThemedText style={{
-        fontSize: 20,
-        fontWeight: 'bold',
-        marginVertical: 10,
-      }}>Search Food</ThemedText>} */}
+      {/* {<ThemedText style={{ fontSize: 20, fontWeight: 'bold', marginVertical: 10, }}>Search Food</ThemedText>} */}
       {
         scannerEnabled ?
           <ScannerView setBarcode={setBarcode} setScannerEnabled={setScannerEnabled} setLoading={setLoading} />

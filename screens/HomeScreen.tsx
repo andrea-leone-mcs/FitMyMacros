@@ -12,6 +12,7 @@ import { DatabaseContext, getRecentFoods } from '../storage/dbContext';
 
 const Tab = createBottomTabNavigator();
 
+// Row with the date and the arrows to switch the day
 function DateRow({ date, setCalendarVisible, switchAnimation }): React.JSX.Element {
   const options: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short', year: 'numeric' };
   return (
@@ -31,22 +32,31 @@ function DateRow({ date, setCalendarVisible, switchAnimation }): React.JSX.Eleme
   );
 }
 
+// Home Screen View with the daily stats and meals
 function HomeScreenView({ navigation, route }): React.JSX.Element {
+  // daily stats: kcals, carbs, proteins, fats
   const [dailyStats, setDailyStats] = useState<number[]>([0, 0, 0, 0]);
+  // selected day
   const [selectedDay, setSelectedDay] = useState<Date>(new Date());
+  // is the calendar visible?
   const [calendarVisible, setCalendarVisible] = useState<boolean>(false);
+  // recent foods
   const [recentFoods, setRecentFoods] = useState({ 'Breakfast': [], 'Lunch': [], 'Snacks': [], 'Dinner': [] });
 
-  const db = useContext(DatabaseContext);
+  // constants used by animation for the swipe
   const translateX = new Animated.Value(0);
   const screenWidth = Dimensions.get('window').width;
 
+  // database context
+  const db = useContext(DatabaseContext);
   if (!db) { throw new Error("Can't retrieve db from DatabaseContext"); }
 
+  // retrieve the recent foods when the daily stats change (and on the first render)
   useEffect(() => {
     (async () => setRecentFoods(await getRecentFoods(db)))();
   }, [dailyStats]);
 
+  // animation for the swipe
   const onPanGestureEvent = Animated.event(
     [{ nativeEvent: { translationX: translateX } }],
     { useNativeDriver: true }
@@ -81,6 +91,7 @@ function HomeScreenView({ navigation, route }): React.JSX.Element {
       });
     });
   };
+  // handle the swipe gesture
   const onHandlerStateChange = (event) => {
     if (event.nativeEvent.state === State.END) {
       const { translationX: transX } = event.nativeEvent;
@@ -122,6 +133,7 @@ function HomeScreenView({ navigation, route }): React.JSX.Element {
   );
 }
 
+// Home Screen with Tab Navigation
 function HomeScreen({ navigation }): React.JSX.Element {
   return (
     <Tab.Navigator initialRouteName="Home">
