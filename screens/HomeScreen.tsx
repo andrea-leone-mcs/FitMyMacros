@@ -9,6 +9,7 @@ import { CalendarDarkTheme } from '../styles/Themes';
 import { PanGestureHandler, ScrollView, State } from 'react-native-gesture-handler';
 import { Animated, Dimensions } from 'react-native'
 import { DatabaseContext, getRecentFoods } from '../storage/dbContext';
+import ProfileScreen from './ProfileScreen';
 
 const Tab = createBottomTabNavigator();
 
@@ -144,6 +145,16 @@ function HomeScreen({ navigation }): React.JSX.Element {
           headerShown: false,
           tabBarIcon: ({ focused, size }) => (
             <Icon name="home" color={focused ? Colors.white : '#898989'} size={size} />
+          ),
+          tabBarShowLabel: false,
+        }} />
+      <Tab.Screen
+        name="Profile"
+        component={ProfileScreen}
+        options={{
+          headerShown: false,
+          tabBarIcon: ({ focused, size }) => (
+            <Icon name="person" color={focused ? Colors.white : '#898989'} size={size} />
           ),
           tabBarShowLabel: false,
         }} />
