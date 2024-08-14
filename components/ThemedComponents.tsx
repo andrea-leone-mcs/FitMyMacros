@@ -34,4 +34,17 @@ const ThemedView: React.FC<ThemedViewProps> = ({ children, style, ...props }) =>
   );
 };
 
-export {ThemedText, ThemedView};
+const HSpaceView = ({ size }) => <View style={{ width: size }} />;
+const VSpaceView = ({ size }) => <View style={{ height: size }} />;
+const HLine = ({ width, topMargin = 0, bottomMargin = 0 }) => <View
+  style={{
+    height: 1,
+    width: width,
+    borderBottomColor: Colors.light,
+    borderBottomWidth: 1,
+    marginTop: topMargin,
+    marginBottom: bottomMargin,
+  }}
+/>
+
+export { ThemedText, ThemedView, HSpaceView, VSpaceView, HLine };
