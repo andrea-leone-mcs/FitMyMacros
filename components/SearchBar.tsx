@@ -5,10 +5,9 @@ import Colors from "../styles/Colors";
 import { findMatchingFoods } from "../apis/apis";
 import { ThemedView } from "./ThemedComponents";
 
-const SearchBar = ({ setSearchResults, setScannerEnabled, enabled, setLoading }) => {
+const SearchBar = ({ searchPhrase, setSearchPhrase, setSearchResults, setScannerEnabled, enabled, setLoading }) => {
   // has the search bar been clicked? - used to show/hide buttons
   const [clicked, setClicked] = useState(false);
-  const [searchPhrase, setSearchPhrase] = useState("");
 
   return (
     <>

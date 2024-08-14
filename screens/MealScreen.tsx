@@ -20,8 +20,12 @@ function MealScreen({ route }): React.JSX.Element {
 
   // foods eaten in the meal
   const [foods, setFoods] = useState<object[]>(foodsParam);
+  // search phrase in the search bar
+  const [searchPhrase, setSearchPhrase] = useState("");
   // foods found by the search bar
   const [searchFoods, setSearchFoods] = useState<object[] | null>(null);
+  // page of the search results
+  const [searchPage, setSearchPage] = useState(1);
   // foods that can be added to the meal (recent foods not already in the meal)
   const [shownRecentFoods, setShownRecentFoods] = useState([]);
 
@@ -101,7 +105,7 @@ function MealScreen({ route }): React.JSX.Element {
         fontWeight: 'bold',
         marginVertical: 20,
       }}>{mealName}</ThemedText>
-      <FoodsList foods={foods} addCallback={undefined} removeCallback={removeCallback} editCallback={editCallback} loading={false} />
+      <FoodsList foods={foods} removeCallback={removeCallback} editCallback={editCallback} />
       <View style={{
         height: 1,
         width: '90%',
@@ -114,9 +118,17 @@ function MealScreen({ route }): React.JSX.Element {
           <ScannerView setBarcode={setBarcode} setScannerEnabled={setScannerEnabled} setLoading={setLoading} />
           :
           <>
-            <SearchBar setSearchResults={setSearchFoods} setScannerEnabled={setScannerEnabled} enabled={!loading} setLoading={setLoading} />
+            <SearchBar searchPhrase={searchPhrase} setSearchPhrase={setSearchPhrase} setSearchResults={setSearchFoods} setScannerEnabled={setScannerEnabled} enabled={!loading} setLoading={setLoading} />
             { selectAmountVisible && <SelectAmountDialog visible={true} setVisible={setSelectAmountVisible} food={scannedFoodObj} amount={scannedAmount} setAmount={setScannedAmount} addCallback={addCallback} editCallback={editCallback} />}
-            <FoodsList foods={searchFoods ? searchFoods : shownRecentFoods} addCallback={addCallback} removeCallback={undefined} editCallback={undefined} loading={loading} />
+            <FoodsList
+              foods={searchFoods ? searchFoods : shownRecentFoods}
+              setFoods={setSearchFoods}
+              searchPhrase={searchPhrase}
+              page={searchPage}
+              setPage={setSearchPage}
+              addCallback={addCallback}
+              loading={loading} 
+              setLoading={setLoading} />
           </>
       }
     </ThemedView>

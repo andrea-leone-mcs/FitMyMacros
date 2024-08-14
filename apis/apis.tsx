@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { roundToDecimalPlaces } from '../utils/utils';
+import { roundToDecimalPlaces, sortByEditDistance } from '../utils/utils';
 
 const jsonToFood = (jsonFood: object) => {
   const keys = Object.keys(jsonFood);
@@ -22,12 +22,16 @@ const jsonToFood = (jsonFood: object) => {
   };
 }
 
-const findMatchingFoods = async (foodName: string) => {
+const findMatchingFoods = async (foodName: string, page: number = 1) => {
   try {
-    const url = `https://world.openfoodfacts.org/cgi/search.pl?search_terms=${foodName}&search_simple=1&action=process&json=1&page=1&page_size=20`;
+    const url = `https://world.openfoodfacts.org/cgi/search.pl?search_terms=${foodName}&search_simple=1&action=process&json=1&page=${page}&page_size=16`;
     const response = await axios.get(url);
     console.log('Open Food Facts response: ', response.data.products.length, ' results');
-    return response.data.products.map(food => jsonToFood(food));
+    const foods = response.data.products.map(food => jsonToFood(food));
+    console.log('NON SORTED: ', foods);
+    const sortedFoods = sortByEditDistance(foods, "name", foodName);
+    console.log('SORTED: ', sortedFoods);
+    return sortedFoods;
   } catch (error) {
     console.error('Error querying Open Food Facts:', error);
     throw error;

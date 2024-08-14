@@ -2,10 +2,11 @@ import { FlatList, } from "react-native-gesture-handler";
 import { ThemedText, ThemedView } from "./ThemedComponents";
 import { ActivityIndicator, StyleSheet, TouchableOpacity, View } from "react-native";
 import Colors from "../styles/Colors";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import SelectAmountDialog from "./SelectAmountDialog";
 import Ionicons from "@react-native-vector-icons/ionicons";
 import { roundToDecimalPlaces } from "../utils/utils";
+import { findMatchingFoods } from "../apis/apis";
 
 // single item in the list
 // buttons are displayed based on the callbacks passed as props
@@ -67,20 +68,49 @@ function FoodItem({ food, addCallback, removeCallback, editCallback }) {
   );
 }
 
-function FoodsList({ foods, addCallback, removeCallback, editCallback, loading }) {
+interface FoodsListProps {
+  foods: object[],
+  setFoods?: Function,
+  page?: number,
+  setPage?: Function,
+  searchPhrase?: string,
+  addCallback?: Function,
+  removeCallback?: Function,
+  editCallback?: Function,
+  loading?: boolean,
+  setLoading?: Function,
+}
+
+const FoodsList: React.FC<FoodsListProps> = ({ foods, setFoods, page, setPage, searchPhrase, addCallback, removeCallback, editCallback, loading, setLoading }) => {
+  const fetchMoreData = async () => {
+    if (page && setPage && setFoods && searchPhrase) {
+      const nextPage = page + 1;
+      setPage(nextPage);
+      if (setLoading)
+        setLoading(true);
+      const new_foods = await findMatchingFoods(searchPhrase, nextPage);
+      setFoods([...foods, ...new_foods]);
+      if (setLoading)
+        setLoading(false);
+    }
+  };
+  useEffect(() => {
+    console.log('loading', loading);
+  }, [loading]);
+
   // actual list of foods
   return (
-    loading ?
-      <ActivityIndicator size="large" color={Colors.light} style={{ flex: 1, alignContent: 'center', justifyContent: 'center' }} />
-      :
-      <FlatList
-        style={{ width: '90%' }}
-        data={foods}
-        renderItem={({ item }) => (
-          <FoodItem food={item} addCallback={addCallback} removeCallback={removeCallback} editCallback={editCallback} />
-        )}
-        keyExtractor={item => item.id}
-      />
+    <FlatList
+      style={{ width: '90%' }}
+      data={foods}
+      renderItem={({ item }) => (
+        <FoodItem food={item} addCallback={addCallback} removeCallback={removeCallback} editCallback={editCallback} />
+      )}
+      keyExtractor={item => item["id"]}
+      onEndReached={fetchMoreData}
+      onEndReachedThreshold={0.8} // Load more when 80% of the list is visible
+      ListFooterComponent={loading ? <ActivityIndicator size="large" color={Colors.light} /> : <></>}
+    />
   );
 }
 
