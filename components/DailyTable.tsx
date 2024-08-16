@@ -8,7 +8,8 @@ import { DatabaseContext, getMealData, getMeals } from '../storage/dbContext';
 import { roundToDecimalPlaces } from '../utils/utils';
 
 // Displays the daily stats in the Home Screen (kcals, carbs, proteins, fats for that day)
-function DailyDataHeader(props: { dailyStats: number[] }) {
+function DailyDataHeader(props: { dailyStats: number[], preferences: Record<string, any> }) {
+  const preferences = props.preferences;
   return (
     <View style={[tableStyles.container]}>
       <View style={tableStyles.row}>
@@ -16,7 +17,7 @@ function DailyDataHeader(props: { dailyStats: number[] }) {
           <ThemedText style={[tableStyles.rightAlignedText]}>KCALS</ThemedText>
         </View>
         <View style={[tableStyles.cell, tableStyles.leftAlignedCell]}>
-          <ThemedText style={tableStyles.leftAlignedText}>{roundToDecimalPlaces(props.dailyStats[0], 1)} / 2150</ThemedText>
+          <ThemedText style={tableStyles.leftAlignedText}>{roundToDecimalPlaces(props.dailyStats[0], 1)} / {preferences.goals.kcals}</ThemedText>
         </View>
       </View>
       <View style={[tableStyles.row, { borderBottomWidth: 0, paddingBottom: 0 }]}>
@@ -25,9 +26,9 @@ function DailyDataHeader(props: { dailyStats: number[] }) {
         <View style={[tableStyles.cell, tableStyles.centerAlignedCell]}><ThemedText style={tableStyles.centerAlignedText}>FATS</ThemedText></View>
       </View>
       <View style={tableStyles.row}>
-        <View style={[tableStyles.cell, tableStyles.centerAlignedCell]}><ThemedText style={tableStyles.centerAlignedText}>{roundToDecimalPlaces(props.dailyStats[1], 1)} / 350</ThemedText></View>
-        <View style={[tableStyles.cell, tableStyles.centerAlignedCell]}><ThemedText style={tableStyles.centerAlignedText}>{roundToDecimalPlaces(props.dailyStats[2], 1)} / 150</ThemedText></View>
-        <View style={[tableStyles.cell, tableStyles.centerAlignedCell]}><ThemedText style={tableStyles.centerAlignedText}>{roundToDecimalPlaces(props.dailyStats[3], 1)} / 60</ThemedText></View>
+        <View style={[tableStyles.cell, tableStyles.centerAlignedCell]}><ThemedText style={tableStyles.centerAlignedText}>{roundToDecimalPlaces(props.dailyStats[1], 1)} / {preferences.goals.carbs}</ThemedText></View>
+        <View style={[tableStyles.cell, tableStyles.centerAlignedCell]}><ThemedText style={tableStyles.centerAlignedText}>{roundToDecimalPlaces(props.dailyStats[2], 1)} / {preferences.goals.proteins}</ThemedText></View>
+        <View style={[tableStyles.cell, tableStyles.centerAlignedCell]}><ThemedText style={tableStyles.centerAlignedText}>{roundToDecimalPlaces(props.dailyStats[3], 1)} / {preferences.goals.fats}</ThemedText></View>
       </View>
     </View>
   );

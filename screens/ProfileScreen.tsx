@@ -1,12 +1,18 @@
-import { StyleSheet, View } from "react-native";
+import { StyleSheet, ToastAndroid, View } from "react-native";
 import { HLine, HSpaceView, ThemedText, ThemedView, VSpaceView } from "../components/ThemedComponents";
 import { TextInput } from "react-native-gesture-handler";
 import Colors from "../styles/Colors";
 import { useEffect, useState } from "react";
-import { RadioButton } from "react-native-paper";
+import { Button, RadioButton } from "react-native-paper";
+import { loadPreferences, updatePreferences } from "../storage/preferences";
 
 const MacroRow = ({ label, value, setValue }) => {
   const [txtValue, setTxtValue] = useState(value ? value.toString() : "");
+  
+  // Sync txtValue with the value prop whenever it changes
+  useEffect(() => {
+    setTxtValue(value ? value.toString() : "");
+  }, [value]);
 
   return (
     <ThemedView style={styles.row}>
@@ -40,6 +46,20 @@ function ProfileScreen({ }): React.JSX.Element {
     setKcals(proKcals + fatKcals + carbKcals);
   }, [pros, fats, carbs]);
 
+  useEffect(() => {
+    // load preferences
+    const _loadPreferences = async () => {
+      const savedPreferences = await loadPreferences();
+      console.log("Preferences loaded", savedPreferences);
+      setCarbs(savedPreferences.goals.carbs);
+      setPros(savedPreferences.goals.proteins);
+      setFats(savedPreferences.goals.fats);
+      setTag(savedPreferences.diet);
+    };
+
+    _loadPreferences();
+  }, []);
+
   return (
     <ThemedView style={styles.container}>
       <ThemedView style={styles.row}>
@@ -65,7 +85,7 @@ function ProfileScreen({ }): React.JSX.Element {
         <ThemedText style={{ fontSize: 22 }}>Food Preferences</ThemedText>
       </ThemedView>
 
-      <RadioButton.Group onValueChange={value => setTag(value)} value={tag}>
+      <RadioButton.Group onValueChange={setTag} value={tag}>
         <ThemedView style={styles.row}>
           <RadioButton value="omnivore" />
           <ThemedText style={styles.label}>Omnivore</ThemedText>
@@ -79,6 +99,14 @@ function ProfileScreen({ }): React.JSX.Element {
           <ThemedText style={styles.label}>Carnivore</ThemedText>
         </ThemedView>
       </RadioButton.Group>
+
+      <VSpaceView size={20} />
+      <Button mode="contained" onPress={() => {
+        const newPreferences = { goals: { proteins: pros, fats, carbs, kcals }, diet: tag };
+        updatePreferences(newPreferences);
+        console.log("Preferences updated", newPreferences);
+        ToastAndroid.show("Preferences saved", ToastAndroid.SHORT);
+      }}>Save</Button>
     </ThemedView>
   );
 }
@@ -90,16 +118,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     width: "90%",
     marginTop: 30,
-    // borderWidth: 1,
-    // borderColor: 'red',
   },
   row: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: 4,
-    // borderWidth: 1,
-    // borderColor: 'blue',
   },
   label: {
     fontSize: 16,

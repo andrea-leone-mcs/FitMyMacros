@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, useContext } from 'react';
+import React, { useEffect, useState, useRef, useContext, useCallback } from 'react';
 import { DailyDataHeader, DailyMealsTable } from '../components/DailyTable';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Icon from '@react-native-vector-icons/ionicons';
@@ -7,9 +7,11 @@ import { Calendar } from 'react-native-calendars';
 import { ThemedText, ThemedView } from '../components/ThemedComponents';
 import { CalendarDarkTheme } from '../styles/Themes';
 import { PanGestureHandler, ScrollView, State } from 'react-native-gesture-handler';
-import { Animated, Dimensions } from 'react-native'
+import { Animated, Dimensions, ToastAndroid } from 'react-native'
 import { DatabaseContext, getRecentFoods } from '../storage/dbContext';
 import ProfileScreen from './ProfileScreen';
+import { loadPreferences } from '../storage/preferences';
+import { useFocusEffect } from '@react-navigation/native';
 
 const Tab = createBottomTabNavigator();
 
@@ -43,6 +45,8 @@ function HomeScreenView({ navigation, route }): React.JSX.Element {
   const [calendarVisible, setCalendarVisible] = useState<boolean>(false);
   // recent foods
   const [recentFoods, setRecentFoods] = useState({ 'Breakfast': [], 'Lunch': [], 'Snacks': [], 'Dinner': [] });
+  // preferences
+  const [preferences, setPreferences] = useState<Record<string, any> | null>(null);
 
   // constants used by animation for the swipe
   const translateX = new Animated.Value(0);
@@ -56,6 +60,29 @@ function HomeScreenView({ navigation, route }): React.JSX.Element {
   useEffect(() => {
     (async () => setRecentFoods(await getRecentFoods(db)))();
   }, [dailyStats]);
+
+  // retrieve the preferences on the first render
+  useFocusEffect(
+    useCallback(() => {
+      (async () => setPreferences(await loadPreferences()))();
+    }, [])
+  );
+  
+  // perform action when the component is focused
+  useFocusEffect(
+    useCallback(() => {
+      if (preferences === null) return;
+
+      console.log('Preferences:', preferences);
+      if (preferences.goals.kcals === null || preferences.goals.proteins === null || preferences.goals.fats === null || preferences.goals.carbs === null) {
+        navigation.navigate('Profile');
+        setTimeout(() => {
+          ToastAndroid.show('Please set your daily goals in the profile page', ToastAndroid.SHORT);
+        }, 200);
+      }
+    }, [preferences])
+  );
+
 
   // animation for the swipe
   const onPanGestureEvent = Animated.event(
@@ -125,7 +152,7 @@ function HomeScreenView({ navigation, route }): React.JSX.Element {
           onGestureEvent={onPanGestureEvent}
           onHandlerStateChange={onHandlerStateChange} >
           <Animated.View style={{ transform: [{ translateX }] }}>
-            <DailyDataHeader dailyStats={dailyStats} />
+            {preferences && <DailyDataHeader preferences={preferences} dailyStats={dailyStats} />}
             <DailyMealsTable navigation={navigation} setDailyStats={setDailyStats} day={selectedDay} recentFoods={recentFoods} />
           </Animated.View>
         </PanGestureHandler>
