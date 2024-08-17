@@ -1,6 +1,6 @@
 import { StackNavigationProp } from '@react-navigation/stack';
 import { Image, StyleSheet, Platform, Button, TouchableOpacity, View, Text } from 'react-native';
-import { ThemedText } from './ThemedComponents';
+import { CustomProgressBar, ThemedText } from './ThemedComponents';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import Colors from '../styles/Colors';
 import { useCallback, useContext, useEffect, useState } from 'react';
@@ -12,13 +12,8 @@ function DailyDataHeader(props: { dailyStats: number[], preferences: Record<stri
   const preferences = props.preferences;
   return (
     <View style={[tableStyles.container]}>
-      <View style={tableStyles.row}>
-        <View style={[tableStyles.cell, tableStyles.rightAlignedCell]}>
-          <ThemedText style={[tableStyles.rightAlignedText]}>KCALS</ThemedText>
-        </View>
-        <View style={[tableStyles.cell, tableStyles.leftAlignedCell]}>
-          <ThemedText style={tableStyles.leftAlignedText}>{roundToDecimalPlaces(props.dailyStats[0], 1)} / {preferences.goals.kcals}</ThemedText>
-        </View>
+      <View style={[tableStyles.row, { borderBottomWidth: 0 }]}>
+        <CustomProgressBar label="KCALS" progress={roundToDecimalPlaces(props.dailyStats[0], 1)+2500} max={preferences.goals.kcals} />
       </View>
       <View style={[tableStyles.row, { borderBottomWidth: 0, paddingBottom: 0 }]}>
         <View style={[tableStyles.cell, tableStyles.centerAlignedCell]}><ThemedText style={tableStyles.centerAlignedText}>CARBS</ThemedText></View>
@@ -205,7 +200,7 @@ const buttonStyles = StyleSheet.create({
   },
   mealBtnInfo: {
     color: 'white',
-    fontSize: 12,
+    fontSize: 14,
   }
 });
 
