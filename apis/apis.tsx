@@ -25,9 +25,9 @@ const jsonToFood = (jsonFood: object) => {
 const findMatchingFoods = async (foodName: string, diet: string, page: number = 1) => {
   try {
     const url = diet !== 'omnivore' ?
-      `https://world.openfoodfacts.org/cgi/search.pl?` + `tagtype_0=labels&tag_contains_0=contains&tag_0=${diet}&` + `search_terms=${foodName}&search_simple=1&action=process&json=1&page=${page}&page_size=16`
+      `https://world.openfoodfacts.org/cgi/search.pl?` + `tagtype_0=labels&tag_contains_0=contains&tag_0=${diet}&` + `search_terms={${foodName}}&search_simple=1&action=process&json=1&page=${page}&page_size=16`
       :
-      `https://world.openfoodfacts.org/cgi/search.pl?` + `search_terms=${foodName}&search_simple=1&action=process&json=1&page=${page}&page_size=16`;
+      `https://world.openfoodfacts.org/cgi/search.pl?` + `search_terms={${foodName}}&search_simple=1&action=process&json=1&page=${page}&page_size=16`;
     // const url = `https://world.openfoodfacts.org/cgi/search.pl?search_terms=${foodName}&search_simple=1&action=process&json=1&page=${page}&page_size=16`;
     console.log(url);
     const response = await axios.get(url, { timeout: 5000 });
