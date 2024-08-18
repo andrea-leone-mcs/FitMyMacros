@@ -95,8 +95,8 @@ function ProfileScreen({ }): React.JSX.Element {
         <ThemedView style={styles.row}>
           <RadioButton value="vegan" />
           <ThemedText style={styles.label}>Vegan</ThemedText>
-          <RadioButton value="carnivore" />
-          <ThemedText style={styles.label}>Carnivore</ThemedText>
+          <RadioButton value="keto" />
+          <ThemedText style={styles.label}>Keto</ThemedText>
         </ThemedView>
       </RadioButton.Group>
 
