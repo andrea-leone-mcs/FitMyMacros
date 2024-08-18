@@ -113,6 +113,8 @@ const DynamicFoodsList: React.FC<DynamicFoodsListProps> = ({ foods, setFoods, se
   };
 
   useEffect(() => {
+    if (setLoading && searchPhrase === "")
+      setLoading(false);
     console.log('loading', loading);
   }, [loading]);
   useEffect(() => {
