@@ -13,7 +13,7 @@ function DailyDataHeader(props: { dailyStats: number[], preferences: Record<stri
   return (
     <View style={[tableStyles.container]}>
       <View style={[tableStyles.row, { borderBottomWidth: 0 }]}>
-        <CustomProgressBar label="KCALS" progress={roundToDecimalPlaces(props.dailyStats[0], 1)+2500} max={preferences.goals.kcals} />
+        <CustomProgressBar label="KCALS" progress={roundToDecimalPlaces(props.dailyStats[0], 1)} max={preferences.goals.kcals} />
       </View>
       <View style={[tableStyles.row, { borderBottomWidth: 0, paddingBottom: 0 }]}>
         <View style={[tableStyles.cell, tableStyles.centerAlignedCell]}><ThemedText style={tableStyles.centerAlignedText}>CARBS</ThemedText></View>
