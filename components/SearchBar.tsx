@@ -2,12 +2,12 @@ import React, { useState, } from "react";
 import { StyleSheet, TextInput, Keyboard, Button } from "react-native";
 import Ionicons from "@react-native-vector-icons/ionicons";
 import Colors from "../styles/Colors";
-import { findMatchingFoods } from "../apis/apis";
 import { ThemedView } from "./ThemedComponents";
 
-const SearchBar = ({ searchPhrase, setSearchPhrase, setSearchResults, setScannerEnabled, enabled, setLoading }) => {
+const SearchBar = ({ searchPhrase, setSearchPhrase, setScannerEnabled, enabled, setLoading }) => {
   // has the search bar been clicked? - used to show/hide buttons
   const [clicked, setClicked] = useState(false);
+  const [displayedSearchPhrase, setDisplayedSearchPhrase] = useState(searchPhrase);
 
   return (
     <>
@@ -17,15 +17,13 @@ const SearchBar = ({ searchPhrase, setSearchPhrase, setSearchResults, setScanner
           <TextInput
             style={styles.input}
             placeholder="Search Food..."
-            value={searchPhrase}
-            onChangeText={setSearchPhrase}
+            value={displayedSearchPhrase}
+            onChangeText={setDisplayedSearchPhrase}
             returnKeyType="search"
             onFocus={() => setClicked(true)}
             onSubmitEditing={async () => {
+              setSearchPhrase(displayedSearchPhrase);
               setLoading(true);
-              const matches = await findMatchingFoods(searchPhrase);
-              console.log(matches);
-              setSearchResults(matches);
             }}
           />
           {clicked && (
@@ -34,7 +32,12 @@ const SearchBar = ({ searchPhrase, setSearchPhrase, setSearchResults, setScanner
               size={20}
               color={Colors.light}
               style={{ padding: 1, start: 0, marginRight: 10 }}
-              onPress={() => { if (enabled) setSearchPhrase(""); }}
+              onPress={() => {
+                if (enabled) {
+                  setSearchPhrase("");
+                  setDisplayedSearchPhrase("");
+                }
+              }}
             />
           )}
         </ThemedView>
@@ -47,7 +50,6 @@ const SearchBar = ({ searchPhrase, setSearchPhrase, setSearchResults, setScanner
                 if (!enabled) return;
                 Keyboard.dismiss();
                 setClicked(false);
-                setSearchResults(null);
               }}
             />
             :

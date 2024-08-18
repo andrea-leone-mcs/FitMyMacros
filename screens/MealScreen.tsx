@@ -1,9 +1,9 @@
 import { ThemedText, ThemedView } from "../components/ThemedComponents";
 import { useContext, useEffect, useState } from "react";
 import SearchBar from "../components/SearchBar";
-import FoodsList from "../components/FoodsList";
+import { DynamicFoodsList, StaticFoodsList } from "../components/FoodsList";
 import Colors from "../styles/Colors";
-import { View } from "react-native";
+import { ToastAndroid, View } from "react-native";
 import { addFoodTX, DatabaseContext, delFoodTX, edtFoodTX } from "../storage/dbContext";
 import { ScannerView } from "../components/ScannerView";
 import { findFoodById } from "../apis/apis";
@@ -24,8 +24,6 @@ function MealScreen({ route }): React.JSX.Element {
   const [searchPhrase, setSearchPhrase] = useState("");
   // foods found by the search bar
   const [searchFoods, setSearchFoods] = useState<object[] | null>(null);
-  // page of the search results
-  const [searchPage, setSearchPage] = useState(1);
   // foods that can be added to the meal (recent foods not already in the meal)
   const [shownRecentFoods, setShownRecentFoods] = useState([]);
 
@@ -82,18 +80,24 @@ function MealScreen({ route }): React.JSX.Element {
     setShownRecentFoods(recentFoods.filter(food => !foods.find(f => f["id"] === food["id"])));
   }, [foods]);
 
-  useEffect(() => {
-    setLoading(false);
-  }, [searchFoods]);
+  // useEffect(() => {
+  //   setLoading(false);
+  // }, [searchFoods]);
 
   // when a barcode is scanned, retrieve the food object from the barcode
   useEffect(() => {
     if (barcode) {
-      findFoodById(barcode).then((food: object) => {
-        setScannedFoodObj(food);
+      findFoodById(barcode).then((response) => {
+        if (response.status === 200) {
+          const food = response.food;
+          setScannedFoodObj(food);
+          setSelectAmountVisible(true);
+          setBarcode(undefined);          
+        } else {
+          const toastText = response.status === 404 ? 'Food not found.' : 'Error fetching foods. Please try again later.';
+          ToastAndroid.show(toastText, ToastAndroid.SHORT);
+        }
         setLoading(false);
-        setSelectAmountVisible(true);
-        setBarcode(undefined);
       });
     }
   }, [barcode]);
@@ -105,7 +109,7 @@ function MealScreen({ route }): React.JSX.Element {
         fontWeight: 'bold',
         marginVertical: 20,
       }}>{mealName}</ThemedText>
-      <FoodsList foods={foods} removeCallback={removeCallback} editCallback={editCallback} />
+      <StaticFoodsList foods={foods} removeCallback={removeCallback} editCallback={editCallback} />
       <View style={{
         height: 1,
         width: '90%',
@@ -118,16 +122,14 @@ function MealScreen({ route }): React.JSX.Element {
           <ScannerView setBarcode={setBarcode} setScannerEnabled={setScannerEnabled} setLoading={setLoading} />
           :
           <>
-            <SearchBar searchPhrase={searchPhrase} setSearchPhrase={setSearchPhrase} setSearchResults={setSearchFoods} setScannerEnabled={setScannerEnabled} enabled={!loading} setLoading={setLoading} />
-            { selectAmountVisible && <SelectAmountDialog visible={true} setVisible={setSelectAmountVisible} food={scannedFoodObj} amount={scannedAmount} setAmount={setScannedAmount} addCallback={addCallback} editCallback={editCallback} />}
-            <FoodsList
+            <SearchBar searchPhrase={searchPhrase} setSearchPhrase={setSearchPhrase} setScannerEnabled={setScannerEnabled} enabled={!loading} setLoading={setLoading} />
+            {selectAmountVisible && <SelectAmountDialog visible={true} setVisible={setSelectAmountVisible} food={scannedFoodObj} amount={scannedAmount} setAmount={setScannedAmount} addCallback={addCallback} editCallback={editCallback} />}
+            <DynamicFoodsList
               foods={searchFoods ? searchFoods : shownRecentFoods}
               setFoods={setSearchFoods}
               searchPhrase={searchPhrase}
-              page={searchPage}
-              setPage={setSearchPage}
               addCallback={addCallback}
-              loading={loading} 
+              loading={loading}
               setLoading={setLoading} />
           </>
       }

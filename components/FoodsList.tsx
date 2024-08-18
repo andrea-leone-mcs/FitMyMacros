@@ -1,12 +1,13 @@
 import { FlatList, } from "react-native-gesture-handler";
 import { ThemedText, ThemedView } from "./ThemedComponents";
-import { ActivityIndicator, StyleSheet, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, StyleSheet, ToastAndroid, TouchableOpacity, View } from "react-native";
 import Colors from "../styles/Colors";
 import { useEffect, useState } from "react";
 import SelectAmountDialog from "./SelectAmountDialog";
 import Ionicons from "@react-native-vector-icons/ionicons";
 import { roundToDecimalPlaces } from "../utils/utils";
 import { findMatchingFoods } from "../apis/apis";
+import { loadPreferences } from "../storage/preferences";
 
 // single item in the list
 // buttons are displayed based on the callbacks passed as props
@@ -66,37 +67,59 @@ function FoodItem({ food, addCallback, removeCallback, editCallback }) {
       </ThemedView>
     </>
   );
-}
+};
 
-interface FoodsListProps {
+interface DynamicFoodsListProps {
   foods: object[],
-  setFoods?: Function,
-  page?: number,
-  setPage?: Function,
-  searchPhrase?: string,
+  setFoods: Function,
+  searchPhrase: string,
   addCallback?: Function,
   removeCallback?: Function,
   editCallback?: Function,
   loading?: boolean,
   setLoading?: Function,
-}
+};
 
-const FoodsList: React.FC<FoodsListProps> = ({ foods, setFoods, page, setPage, searchPhrase, addCallback, removeCallback, editCallback, loading, setLoading }) => {
+const DynamicFoodsList: React.FC<DynamicFoodsListProps> = ({ foods, setFoods, searchPhrase, addCallback, removeCallback, editCallback, loading, setLoading }) => {
+  const [noMoreData, setNoMoreData] = useState(false);
+  const [page, setPage] = useState(1);
+
   const fetchMoreData = async () => {
-    if (page && setPage && setFoods && searchPhrase) {
-      const nextPage = page + 1;
-      setPage(nextPage);
-      if (setLoading)
-        setLoading(true);
-      const new_foods = await findMatchingFoods(searchPhrase, nextPage);
-      setFoods([...foods, ...new_foods]);
-      if (setLoading)
-        setLoading(false);
+    if (searchPhrase === "") return;
+    console.log('fetching more data');
+    if (setLoading)
+      setLoading(true);
+    
+    const preferences = await loadPreferences();
+    const response = await findMatchingFoods(searchPhrase, preferences.diet, page);
+    setPage(page + 1);
+    
+    if (response.status === 200) {  // success
+      const new_foods = response.foods;
+      if (new_foods.length === 0)
+        setNoMoreData(true);
+      else
+        setFoods([...foods, ...new_foods]);
+    } else {
+      const toastText = response.status === 404 ? 'No foods found.' :
+        response.status === 429 ? 'Too many requests. Please try again later.' :
+          'Error fetching foods. Please try again later.';
+      ToastAndroid.show(toastText, ToastAndroid.SHORT);
+      setNoMoreData(true);
     }
+    
+    if (setLoading)
+      setLoading(false);
   };
+
   useEffect(() => {
     console.log('loading', loading);
   }, [loading]);
+  useEffect(() => {
+    setNoMoreData(searchPhrase === "");
+    setPage(1);
+    setFoods([]);
+  }, [searchPhrase]);
 
   // actual list of foods
   return (
@@ -107,14 +130,32 @@ const FoodsList: React.FC<FoodsListProps> = ({ foods, setFoods, page, setPage, s
         <FoodItem food={item} addCallback={addCallback} removeCallback={removeCallback} editCallback={editCallback} />
       )}
       keyExtractor={item => item["id"]}
-      onEndReached={fetchMoreData}
+      onEndReached={noMoreData ? undefined : fetchMoreData}
       onEndReachedThreshold={0.8} // Load more when 80% of the list is visible
       ListFooterComponent={loading ? <ActivityIndicator size="large" color={Colors.light} /> : <></>}
     />
   );
-}
+};
 
-export default FoodsList;
+interface StaticFoodsListProps {
+  foods: object[],
+  addCallback?: Function,
+  removeCallback?: Function,
+  editCallback?: Function,
+};
+
+const StaticFoodsList: React.FC<StaticFoodsListProps> = ({ foods, addCallback, removeCallback, editCallback }) => {
+  return (
+    <FlatList
+      style={{ width: '90%' }}
+      data={foods}
+      renderItem={({ item }) => (
+        <FoodItem food={item} addCallback={addCallback} removeCallback={removeCallback} editCallback={editCallback} />
+      )}
+      keyExtractor={item => item["id"]}
+    />
+  );
+};
 
 const styles = StyleSheet.create({
   listItem: {
@@ -137,3 +178,5 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
   },
 });
+
+export { DynamicFoodsList, StaticFoodsList };
