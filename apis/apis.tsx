@@ -22,30 +22,44 @@ const jsonToFood = (jsonFood: object) => {
   };
 }
 
-const findMatchingFoods = async (foodName: string, page: number = 1) => {
+const findMatchingFoods = async (foodName: string, diet: string, page: number = 1) => {
   try {
+    // const url = `https://world.openfoodfacts.org/cgi/search.pl?` + `tagtype_0=labels&tag_contains_0=contains&tag_0=${diet}&` + `search_terms=${foodName}&search_simple=1&action=process&json=1&page=${page}&page_size=16`;
     const url = `https://world.openfoodfacts.org/cgi/search.pl?search_terms=${foodName}&search_simple=1&action=process&json=1&page=${page}&page_size=16`;
-    const response = await axios.get(url);
-    console.log('Open Food Facts response: ', response.data.products.length, ' results');
-    const foods = response.data.products.map(food => jsonToFood(food));
-    console.log('NON SORTED: ', foods);
-    const sortedFoods = sortByEditDistance(foods, "name", foodName);
-    console.log('SORTED: ', sortedFoods);
-    return sortedFoods;
+    const response = await axios.get(url, { timeout: 5000 });
+    if (response.status === 429) {
+      console.error('Open Food Facts API rate limit exceeded');
+      return { status: 429 };
+    } else if (response.status === 200 && response.data.count != 0) {
+      console.log('Open Food Facts response: ', response.data.count, ' results');
+      const foods = response.data.products
+        .map(food => jsonToFood(food))
+        .filter(food => food.name && food.kcals && food.carbs && food.fats && food.proteins);
+      const sortedFoods = sortByEditDistance(foods, "name", foodName);
+      return {
+        status: 200,
+        foods: sortedFoods
+      };
+    } else return { status: 404 };
   } catch (error) {
     console.error('Error querying Open Food Facts:', error);
-    throw error;
+    return { status: 500 };
   }
 };
 
 const findFoodById = async (foodId: string) => {
   try {
     const url = `https://world.openfoodfacts.org/api/v3/product/${foodId}.json`;
-    const response = await axios.get(url);
-    return jsonToFood(response.data.product);
+    const response = await axios.get(url, { timeout: 5000 });
+    if (response.status === 200 && response.data.status === "success") {
+      const food = jsonToFood(response.data.product);
+      if (food.name && food.kcals && food.carbs && food.fats && food.proteins)
+        return { status: 200, food: food };
+      else return { status: 404 };
+    } else return { status: 404 };
   } catch (error) {
     console.error('Error querying Open Food Facts:', error);
-    throw error;
+    return { status: 500 };
   }
 }
 
