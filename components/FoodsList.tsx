@@ -44,9 +44,9 @@ function FoodItem({ food, addCallback, removeCallback, editCallback }) {
             </ThemedView>
             <View style={styles.line} />
             <ThemedView style={[styles.row, { backgroundColor: Colors.dark, marginHorizontal: 12 }]}>
-              <ThemedView style={{ backgroundColor: Colors.dark, width: food.amount ? '60%' : '100%' }}>
+              <ThemedView style={{ backgroundColor: Colors.dark, width: food.amount ? '65%' : '100%' }}>
                 <ThemedView style={[styles.row,]}>
-                  <ThemedText>kcal</ThemedText>
+                  <ThemedText>kcals</ThemedText>
                   <ThemedText>carbs</ThemedText>
                   <ThemedText>pros</ThemedText>
                   <ThemedText>fats</ThemedText>
