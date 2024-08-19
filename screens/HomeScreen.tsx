@@ -61,25 +61,24 @@ function HomeScreenView({ navigation, route }): React.JSX.Element {
     (async () => setRecentFoods(await getRecentFoods(db)))();
   }, [dailyStats]);
 
-  // retrieve the preferences on the first render
+  // retrieve preferences every time the component is focused
   useFocusEffect(
     useCallback(() => {
-      (async () => setPreferences(await loadPreferences()))();
-    }, [])
-  );
-  
-  // perform action when the component is focused
-  useFocusEffect(
-    useCallback(() => {
-      if (preferences === null) return;
+      const _loadPreferences = async () => {
+        const savedPreferences = await loadPreferences();
+        console.log("Preferences (home)", savedPreferences);
+        if (JSON.stringify(savedPreferences) !== JSON.stringify(preferences))
+          setPreferences(savedPreferences);
 
-      console.log('Preferences:', preferences);
-      if (preferences.goals.kcals === null || preferences.goals.proteins === null || preferences.goals.fats === null || preferences.goals.carbs === null) {
-        navigation.navigate('Profile');
-        setTimeout(() => {
-          ToastAndroid.show('Please set your daily goals in the profile page', ToastAndroid.SHORT);
-        }, 200);
+        if (savedPreferences.goals.kcals === null || savedPreferences.goals.proteins === null || savedPreferences.goals.fats === null || savedPreferences.goals.carbs === null) {
+          navigation.navigate('Profile');
+          setTimeout(() => {
+            ToastAndroid.show('Please set your daily goals in the profile page', ToastAndroid.SHORT);
+          }, 200);
+        }
       }
+
+      _loadPreferences();
     }, [preferences])
   );
 
