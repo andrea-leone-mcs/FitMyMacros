@@ -23,7 +23,7 @@ function MealScreen({ route }): React.JSX.Element {
   // search phrase in the search bar
   const [searchPhrase, setSearchPhrase] = useState("");
   // foods found by the search bar
-  const [searchFoods, setSearchFoods] = useState<object[] | null>(null);
+  const [searchFoods, setSearchFoods] = useState<object[]>([]);
   // foods that can be added to the meal (recent foods not already in the meal)
   const [shownRecentFoods, setShownRecentFoods] = useState([]);
 
@@ -48,8 +48,7 @@ function MealScreen({ route }): React.JSX.Element {
   const addCallback = (food) => {
     console.log(foods);
     setFoods([...foods, food]);
-    setSearchFoods(null);
-
+    setSearchFoods([]);
     addFoodTX(db, mealId, food);
   };
 
@@ -92,7 +91,7 @@ function MealScreen({ route }): React.JSX.Element {
           const food = response.food;
           setScannedFoodObj(food);
           setSelectAmountVisible(true);
-          setBarcode(undefined);          
+          setBarcode(undefined);
         } else {
           const toastText = response.status === 404 ? 'Food not found.' : 'Error fetching foods. Please try again later.';
           ToastAndroid.show(toastText, ToastAndroid.SHORT);
@@ -123,14 +122,22 @@ function MealScreen({ route }): React.JSX.Element {
           :
           <>
             <SearchBar searchPhrase={searchPhrase} setSearchPhrase={setSearchPhrase} setScannerEnabled={setScannerEnabled} enabled={!loading} setLoading={setLoading} />
-            {selectAmountVisible && <SelectAmountDialog visible={true} setVisible={setSelectAmountVisible} food={scannedFoodObj} amount={scannedAmount} setAmount={setScannedAmount} addCallback={addCallback} editCallback={editCallback} />}
-            <DynamicFoodsList
-              foods={searchFoods ? searchFoods : shownRecentFoods}
-              setFoods={setSearchFoods}
-              searchPhrase={searchPhrase}
-              addCallback={addCallback}
-              loading={loading}
-              setLoading={setLoading} />
+            {
+              selectAmountVisible && <SelectAmountDialog visible={true} setVisible={setSelectAmountVisible} food={scannedFoodObj} amount={scannedAmount} setAmount={setScannedAmount} addCallback={addCallback} editCallback={editCallback} />
+            }
+            {
+              searchPhrase !== "" ?
+                <DynamicFoodsList
+                  foods={searchFoods}
+                  setFoods={setSearchFoods}
+                  searchPhrase={searchPhrase}
+                  addCallback={addCallback}
+                  loading={loading}
+                  setLoading={setLoading} />
+                :
+                <StaticFoodsList foods={shownRecentFoods} addCallback={addCallback} />
+            }
+
           </>
       }
     </ThemedView>
