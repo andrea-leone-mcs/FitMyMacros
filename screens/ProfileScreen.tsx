@@ -50,7 +50,7 @@ function ProfileScreen({ }): React.JSX.Element {
     // load preferences
     const _loadPreferences = async () => {
       const savedPreferences = await loadPreferences();
-      console.log("Preferences loaded", savedPreferences);
+      console.log("Preferences (profile)", savedPreferences);
       setCarbs(savedPreferences.goals.carbs);
       setPros(savedPreferences.goals.proteins);
       setFats(savedPreferences.goals.fats);
