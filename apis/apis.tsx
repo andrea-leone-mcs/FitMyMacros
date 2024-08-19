@@ -10,7 +10,7 @@ const jsonToFood = (jsonFood: object) => {
   const carbs = roundToDecimalPlaces(parseFloat(nutriments["carbohydrates_100g"]), 1)
   const fats = roundToDecimalPlaces(parseFloat(nutriments["fat_100g"]), 1)
   const proteins = roundToDecimalPlaces(parseFloat(nutriments["proteins_100g"]), 1)
-  const brand = jsonFood["brands"].length > 0 ? jsonFood["brands"] : null;
+  const brand = jsonFood["brands"] && jsonFood["brands"].length > 0 ? jsonFood["brands"] : null;
   return {
     id: id,
     name: productName,
@@ -22,15 +22,26 @@ const jsonToFood = (jsonFood: object) => {
   };
 }
 
+const headers = {
+  'User-Agent': 'FitMyMacros/1.0',
+};
+
 const findMatchingFoods = async (foodName: string, diet: string, page: number = 1) => {
   try {
-    const url = diet !== 'omnivore' ?
-      `https://world.openfoodfacts.org/cgi/search.pl?` + `tagtype_0=labels&tag_contains_0=contains&tag_0=${diet}&` + `search_terms={${foodName}}&search_simple=1&action=process&json=1&page=${page}&page_size=16`
-      :
-      `https://world.openfoodfacts.org/cgi/search.pl?` + `search_terms={${foodName}}&search_simple=1&action=process&json=1&page=${page}&page_size=16`;
-    // const url = `https://world.openfoodfacts.org/cgi/search.pl?search_terms=${foodName}&search_simple=1&action=process&json=1&page=${page}&page_size=16`;
-    console.log(url);
-    const response = await axios.get(url, { timeout: 5000 });
+    const params = {
+      search_terms: foodName,
+      search_simple: 1,
+      json: 1,
+      page: page,
+      page_size: 16,
+      ...(diet !== 'omnivore' && {
+        tagtype_0: 'labels',
+        tag_contains_0: 'contains',
+        tag_0: diet
+      })
+    };
+    const response = await axios.get('https://world.openfoodfacts.org/cgi/search.pl', { headers: headers, params: params });
+
     if (response.status === 429) {
       console.error('Open Food Facts API rate limit exceeded');
       return { status: 429 };
@@ -54,7 +65,7 @@ const findMatchingFoods = async (foodName: string, diet: string, page: number = 
 const findFoodById = async (foodId: string) => {
   try {
     const url = `https://world.openfoodfacts.org/api/v3/product/${foodId}.json`;
-    const response = await axios.get(url, { timeout: 5000 });
+    const response = await axios.get(url, { timeout: 5000, headers: headers });
     if (response.status === 200 && response.data.status === "success") {
       const food = jsonToFood(response.data.product);
       if (food.name && food.kcals && food.carbs && food.fats && food.proteins)
