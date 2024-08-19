@@ -104,7 +104,8 @@ const getRecentFoods = async (db: SQLite.SQLiteDatabase) => {
         let foods_per_meal = { "Breakfast": new Set<string>(), "Lunch": new Set<string>(), "Snacks": new Set<string>(), "Dinner": new Set<string>() };
         for (let i = 0; i < results.rows.length; i++) {
           const item = results.rows.item(i);
-          foods_per_meal[item.meal_name].add(item.food_id);
+          if (item.food_id !== null) // Could happen for malformed data
+            foods_per_meal[item.meal_name].add(item.food_id);
         }
         let all_foods: string[] = []
         for (const meal in foods_per_meal) {
@@ -112,7 +113,7 @@ const getRecentFoods = async (db: SQLite.SQLiteDatabase) => {
           all_foods = [...all_foods, ...foods_per_meal[meal]];
         }
         const in_list = "(" + all_foods.map(() => "?").join(",") + ")";
-
+        console.log('Foods per meal', foods_per_meal);
         tx.executeSql("SELECT id, name, brand, kcals, proteins, carbs, fats FROM foods WHERE id IN " + in_list, all_foods,
           (tx, results) => {
             console.log("SELECT foods success: ", results.rows.length, " results.");
@@ -132,6 +133,7 @@ const getRecentFoods = async (db: SQLite.SQLiteDatabase) => {
       error => console.log("Select error: ", error)
     );
   });
+  console.log('All recent foods: ', res);
   return res;
 }
 
