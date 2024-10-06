@@ -126,6 +126,7 @@ const DynamicFoodsList: React.FC<DynamicFoodsListProps> = ({ foods, setFoods, se
   // actual list of foods
   return (
     <FlatList
+      keyboardShouldPersistTaps="handled"
       style={{ width: '90%' }}
       data={foods}
       renderItem={({ item }) => (
@@ -149,6 +150,7 @@ interface StaticFoodsListProps {
 const StaticFoodsList: React.FC<StaticFoodsListProps> = ({ foods, addCallback, removeCallback, editCallback }) => {
   return (
     <FlatList
+      keyboardShouldPersistTaps="handled"
       style={{ width: '90%' }}
       data={foods}
       renderItem={({ item }) => (
