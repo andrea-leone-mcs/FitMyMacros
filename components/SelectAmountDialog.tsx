@@ -6,50 +6,68 @@ import DialogContainer from "react-native-dialog/lib/Container";
 import { useEffect, useState } from "react";
 import DialogButton from "react-native-dialog/lib/Button";
 import { roundToDecimalPlaces } from "../utils/utils";
-import { AddButton, RemoveButton } from "./Buttons";
+import { PlusButton, MinusButton } from "./Buttons";
+import DialogInput from "react-native-dialog/lib/Input";
 
 // Dialog in the middle of the screen to select the amount of food
 function SelectAmountDialog({ food, visible, setVisible, amount, setAmount, addCallback, editCallback }) {
   const [localAmount, setLocalAmount] = useState(amount);
 
   useEffect(() => {
-    if (addCallback) {
-      setAmount(100);
-      setLocalAmount(100);
-    }
-    console.log(food);
+    if (visible) console.log("SelectAmountDialog for: ", food);
   }, [visible]);
+
+  const handleAddEditCallback = () => {
+    console.log("SelectAmountDialog: Add/Edit");
+    setAmount(localAmount);
+    addCallback ? addCallback({ ...food, "amount": localAmount }) : editCallback({ ...food, "amount": localAmount });
+    Keyboard.dismiss();
+    setVisible(false);
+  };
+
+  const handleCancelCallback = () => {
+    console.log("SelectAmountDialog: Cancel");
+    Keyboard.dismiss();
+    setVisible(false);
+    setLocalAmount(amount);
+  };
+
+  const handleOnChangeText = text => {
+    const tmp = parseInt(text);
+    if (isNaN(tmp) || tmp < 0) {
+      setLocalAmount(0);
+    } else {
+      setLocalAmount(tmp);
+    }
+  };
+
+  const handleMinusCallback = delta => {
+    return () => {
+      setLocalAmount(localAmount => localAmount >= delta ? localAmount - delta : 0);
+    };
+  };
+
+  const handlePlusCallback = delta => {
+    return () => {
+      console.log("Plus ", delta, localAmount);
+      setLocalAmount(localAmount => localAmount + delta);
+    };
+  };
 
   return (
     <DialogContainer visible={visible} headerStyle={{ margin: 5, }} contentStyle={{ alignItems: "center" }}>
       <ThemedText style={{ fontSize: 20 }}>{food.name}</ThemedText>
       <View style={[styles.row, { justifyContent: "center", alignItems: "center" }]}>
-        <RemoveButton callback={() => {
-          if (localAmount >= 5) {
-            setLocalAmount(localAmount - 5);
-          } else {
-            setLocalAmount(0);
-          }
-          Keyboard.dismiss();
-        }} style={{ marginRight: 20 }} />
+        <MinusButton onPress={handleMinusCallback(5)} onLongPress={handleMinusCallback(20)} style={{ marginRight: 20 }} />
         <TextInput
           keyboardType="numeric"
           style={{ fontSize: 30 }}
           value={localAmount.toString()}
-          onChangeText={(text) => {
-            const tmp = parseInt(text);
-            if (isNaN(tmp) || tmp < 0) {
-              setLocalAmount(0);
-            } else {
-              setLocalAmount(tmp);
-            }
-          }}
+          onChangeText={handleOnChangeText}
+          onSubmitEditing={handleAddEditCallback}
         />
         <ThemedText style={{ fontSize: 20 }}> grams</ThemedText>
-        <AddButton callback={() => {
-          setLocalAmount(localAmount + 5);
-          Keyboard.dismiss();
-        }} style={{ marginLeft: 20 }} />
+        <PlusButton onPress={handlePlusCallback(5)} onLongPress={handlePlusCallback(20)} style={{ marginLeft: 20 }} />
       </View>
       <View style={[styles.listItem, styles.row]}>
         <ThemedText>kcal</ThemedText>
@@ -64,18 +82,8 @@ function SelectAmountDialog({ food, visible, setVisible, amount, setAmount, addC
         <ThemedText>{roundToDecimalPlaces(food.fats / 100 * localAmount, 1)}</ThemedText>
       </View>
       <View style={[styles.row, { justifyContent: "space-between", width: "100%", paddingHorizontal: 30, marginTop: 20 }]}>
-        <DialogButton style={{ fontSize: 16 }} label="Cancel" onPress={() => {
-          console.log("cancel");
-          Keyboard.dismiss();
-          setVisible(false);
-        }} />
-        <DialogButton style={{ fontSize: 16 }} label={addCallback ? "Add" : "Edit"} onPress={() =>  {
-          console.log("add");
-          Keyboard.dismiss();
-          setAmount(localAmount);
-          addCallback ? addCallback({...food, "amount": localAmount}) : editCallback({...food, "amount": localAmount});
-          setVisible(false);
-        }} />
+        <DialogButton style={{ fontSize: 16 }} label="Cancel" onPress={handleCancelCallback} />
+        <DialogButton style={{ fontSize: 16 }} label={addCallback ? "Add" : "Edit"} onPress={handleAddEditCallback} />
       </View>
     </DialogContainer>
   );
