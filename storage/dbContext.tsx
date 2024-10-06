@@ -18,7 +18,7 @@ const DatabaseContextProvider = ({ children }) => {
         error => console.log("Database open error: ", error)
       );
       dbInstance.transaction(tx => {
-        tx.executeSql("CREATE TABLE IF NOT EXISTS foods (id TEXT, name TEXT, brand TEXT, kcals FLOAT, carbs FLOAT, proteins FLOAT, fats FLOAT, timestamp DATETIME)", [],
+        tx.executeSql("CREATE TABLE IF NOT EXISTS foods (id TEXT PRIMARY KEY, name TEXT, brand TEXT, kcals FLOAT, carbs FLOAT, proteins FLOAT, fats FLOAT, timestamp DATETIME)", [],
           () => {
             console.log("Table 'food' created successfully");
           },
@@ -98,41 +98,36 @@ const getRecentFoods = async (db: SQLite.SQLiteDatabase) => {
   let res = { "Breakfast": [], "Lunch": [], "Snacks": [], "Dinner": [] };
 
   await db.transaction(tx => {
-    tx.executeSql("SELECT name AS meal_name, food_id FROM eaten_food, meals WHERE eaten_food.meal_id = meals.id AND meals.date > datetime('now', '-7 day')", [],
+    tx.executeSql("SELECT foods.id AS id,\
+                          foods.name,\
+                          foods.brand,\
+                          foods.kcals,\
+                          foods.proteins,\
+                          foods.carbs,\
+                          foods.fats,\
+                          eaten_food.amount,\
+                          meals.name AS meal_name\
+                          FROM eaten_food, foods, meals\
+                          WHERE eaten_food.food_id = foods.id AND\
+                                eaten_food.meal_id = meals.id AND\
+                                meals.date > datetime('now', '-14 day') AND\
+                                meals.date = (\
+                                  SELECT MAX(m.date)\
+                                  FROM meals m, eaten_food ef\
+                                  WHERE m.id = ef.meal_id AND\
+                                        ef.food_id = eaten_food.food_id AND\
+                                        m.name = meals.name\
+                                )\
+                          ORDER BY meals.date DESC", [],
       (tx, results) => {
-        console.log("SELECT eaten_food, meals success: ", results.rows.length, " results.");
-        let foods_per_meal = { "Breakfast": new Set<string>(), "Lunch": new Set<string>(), "Snacks": new Set<string>(), "Dinner": new Set<string>() };
         for (let i = 0; i < results.rows.length; i++) {
           const item = results.rows.item(i);
-          if (item.food_id !== null) // Could happen for malformed data
-            foods_per_meal[item.meal_name].add(item.food_id);
+          res[item.meal_name].push(item);
         }
-        let all_foods: string[] = []
-        for (const meal in foods_per_meal) {
-          foods_per_meal[meal] = [...foods_per_meal[meal]];
-          all_foods = [...all_foods, ...foods_per_meal[meal]];
-        }
-        const in_list = "(" + all_foods.map(() => "?").join(",") + ")";
-        console.log('Foods per meal', foods_per_meal);
-        tx.executeSql("SELECT id, name, brand, kcals, proteins, carbs, fats FROM foods WHERE id IN " + in_list, all_foods,
-          (tx, results) => {
-            console.log("SELECT foods success: ", results.rows.length, " results.");
-            let foods = {};
-            for (let i = 0; i < results.rows.length; i++) {
-              // TODO: check timestamp and request new data if too old
-              const item = results.rows.item(i);
-              foods[item.id] = item;
-            }
-            for (const meal in foods_per_meal) {
-              res[meal] = foods_per_meal[meal].map(id => foods[id]);
-            }
-          },
-          error => console.log("Select error: ", error)
-        );
-      },
-      error => console.log("Select error: ", error)
+      }
     );
   });
+  
   console.log('All recent foods: ', res);
   return res;
 }
@@ -194,10 +189,18 @@ const getMealData = async (db: SQLite.SQLiteDatabase, mealId: number) => {
 
 const addFoodTX = (db, mealId, food) => {
   db.transaction(tx => {
-    tx.executeSql("INSERT INTO foods (id, name, brand, kcals, carbs, proteins, fats, timestamp) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-      [food.id, food.name, food.brand, food.kcals, food.carbs, food.proteins, food.fats, food.timestamp ? food.timestamp : new Date().toISOString()],
-      () => console.log("Food item added to database"),
-      error => { console.log("Food item add error: ", error); throw error; }
+    tx.executeSql("SELECT * FROM foods WHERE id=?", [food.id],
+      (tx, results) => {
+        if (results.rows.length == 0) {
+          console.log("Food not found in database, proceeding to add it");
+          tx.executeSql("INSERT INTO foods (id, name, brand, kcals, carbs, proteins, fats, timestamp) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+            [food.id, food.name, food.brand, food.kcals, food.carbs, food.proteins, food.fats, food.timestamp ? food.timestamp : new Date().toISOString()],
+            () => console.log("Food item added to database"),
+            error => { console.log("Food item add error: ", error); throw error; }
+          );
+        }
+      },
+      error => console.log("Select error: ", error)
     );
 
     tx.executeSql("SELECT amount FROM eaten_food WHERE meal_id=? AND food_id=?", [mealId, food.id],
@@ -224,12 +227,20 @@ const addFoodTX = (db, mealId, food) => {
 }
 
 const delFoodTX = (db, mealId, food) => {
+  console.log("delete food tx: ", food.id, mealId, food);
   db.transaction(tx => {
-    tx.executeSql("DELETE FROM eaten_food WHERE meal_id=? AND food_id=? AND amount=?", [mealId, food.id, food.amount],
-      () => console.log("Food removed from meal"),
-      error => { console.log("Eaten food remove error: ", error); throw error; }
+    tx.executeSql(
+      "DELETE FROM eaten_food WHERE meal_id=? AND food_id=? AND amount=?", 
+      [mealId, food.id, food.amount],
+      (_, result) => {
+        console.log(`Food removed from meal. Rows affected: ${result.rowsAffected}`);
+      },
+      error => { 
+        console.log("Eaten food remove error: ", error); 
+        throw error; 
+      }
     );
-  });
+  });  
 }
 
 const edtFoodTX = (db, mealId, food) => {
