@@ -11,7 +11,7 @@ export function ScannerView({ setBarcode, setScannerEnabled, setLoading }) {
   const [torchOn, setTorchOn] = useState(false);
   const [enableOnCodeScanned, setEnableOnCodeScanned] = useState(true);
   // Get the camera device (back camera)
-  const device = useCameraDevice('front');
+  const device = useCameraDevice('back');
 
   // Camera permission hooks
   const {
