@@ -3,7 +3,7 @@ import { useContext, useEffect, useState } from "react";
 import SearchBar from "../components/SearchBar";
 import { DynamicFoodsList, StaticFoodsList } from "../components/FoodsList";
 import Colors from "../styles/Colors";
-import { ToastAndroid, View } from "react-native";
+import { StyleSheet, ToastAndroid, View } from "react-native";
 import { addFoodTX, DatabaseContext, delFoodTX, edtFoodTX } from "../storage/dbContext";
 import { ScannerView } from "../components/ScannerView";
 import { findFoodById } from "../apis/apis";
@@ -18,7 +18,7 @@ function MealMacrosTable({ foods }) {
   const fats = foods.reduce((acc, food) => acc + food.fats, 0);
 
   return (
-    <ThemedView style={{flexDirection: 'row', alignItems: 'center'}}>
+    <ThemedView style={{ flexDirection: 'row', alignItems: 'center' }}>
       <ThemedView style={{ flexDirection: 'column', justifyContent: 'space-around' }}>
         <ThemedView style={{ flexDirection: 'row', justifyContent: 'space-around' }}>
           <ThemedText>{kcals} Kcal </ThemedText>
@@ -129,21 +129,11 @@ function MealScreen({ route }): React.JSX.Element {
   return (
     <ThemedView style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
       <ThemedView style={{ flexDirection: 'row', marginVertical: 20 }}>
-        <ThemedText style={{
-          fontSize: 24,
-          fontWeight: 'bold',
-          marginHorizontal: 30,
-        }}>{mealName}</ThemedText>
+        <ThemedText style={styles.mealNameText}>{mealName}</ThemedText>
         <MealMacrosTable foods={foods} />
       </ThemedView>
       <StaticFoodsList foods={foods} removeCallback={removeCallback} editCallback={editCallback} />
-      <View style={{
-        height: 1,
-        width: '90%',
-        borderBottomColor: Colors.light,
-        borderBottomWidth: 1,
-      }} />
-      {/* {<ThemedText style={{ fontSize: 20, fontWeight: 'bold', marginVertical: 10, }}>Search Food</ThemedText>} */}
+      <View style={styles.horizontalLine} />
       {
         scannerEnabled ?
           <ScannerView setBarcode={setBarcode} setScannerEnabled={setScannerEnabled} setLoading={setLoading} />
@@ -151,25 +141,33 @@ function MealScreen({ route }): React.JSX.Element {
           <>
             <SearchBar searchPhrase={searchPhrase} setSearchPhrase={setSearchPhrase} setScannerEnabled={setScannerEnabled} enabled={!loading} setLoading={setLoading} />
             {
-              selectAmountVisible && <SelectAmountDialog visible={true} setVisible={setSelectAmountVisible} food={scannedFoodObj} amount={scannedAmount} setAmount={setScannedAmount} addCallback={addCallback} editCallback={editCallback} />
+              selectAmountVisible &&
+              <SelectAmountDialog visible={true} setVisible={setSelectAmountVisible} food={scannedFoodObj} amount={scannedAmount} setAmount={setScannedAmount} addCallback={addCallback} editCallback={undefined} />
             }
             {
               searchPhrase !== "" ?
-                <DynamicFoodsList
-                  foods={searchFoods}
-                  setFoods={setSearchFoods}
-                  searchPhrase={searchPhrase}
-                  addCallback={addCallback}
-                  loading={loading}
-                  setLoading={setLoading} />
+                <DynamicFoodsList foods={searchFoods} setFoods={setSearchFoods} searchPhrase={searchPhrase} addCallback={addCallback} loading={loading} setLoading={setLoading} />
                 :
                 <StaticFoodsList foods={shownRecentFoods} addCallback={addCallback} />
             }
-
           </>
       }
     </ThemedView>
   );
 }
+
+const styles = StyleSheet.create({
+  mealNameText: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginHorizontal: 30,
+  },
+  horizontalLine: {
+    height: 1,
+    width: '90%',
+    borderBottomColor: Colors.light,
+    borderBottomWidth: 1,
+  },
+});
 
 export default MealScreen;
