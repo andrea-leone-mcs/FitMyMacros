@@ -8,7 +8,29 @@ import { addFoodTX, DatabaseContext, delFoodTX, edtFoodTX } from "../storage/dbC
 import { ScannerView } from "../components/ScannerView";
 import { findFoodById } from "../apis/apis";
 import SelectAmountDialog from "../components/SelectAmountDialog";
+import Ionicons from '@react-native-vector-icons/ionicons';
 
+
+function MealMacrosTable({ foods }) {
+  const kcals = foods.reduce((acc, food) => acc + food.kcals, 0);
+  const carbs = foods.reduce((acc, food) => acc + food.carbs, 0);
+  const proteins = foods.reduce((acc, food) => acc + food.proteins, 0);
+  const fats = foods.reduce((acc, food) => acc + food.fats, 0);
+
+  return (
+    <ThemedView style={{flexDirection: 'row', alignItems: 'center'}}>
+      <ThemedView style={{ flexDirection: 'column', justifyContent: 'space-around' }}>
+        <ThemedView style={{ flexDirection: 'row', justifyContent: 'space-around' }}>
+          <ThemedText>{kcals} Kcal </ThemedText>
+        </ThemedView>
+        <ThemedView style={{ flexDirection: 'row', justifyContent: 'space-around' }}>
+          <ThemedText>{carbs}C, {proteins}P, {fats}F</ThemedText>
+        </ThemedView>
+      </ThemedView>
+      <Ionicons name="create-outline" style={{ marginLeft: 4 }} size={24} color={Colors.light} />
+    </ThemedView>
+  );
+}
 
 // Screen for a single meal
 function MealScreen({ route }): React.JSX.Element {
@@ -106,11 +128,14 @@ function MealScreen({ route }): React.JSX.Element {
 
   return (
     <ThemedView style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      <ThemedText style={{
-        fontSize: 24,
-        fontWeight: 'bold',
-        marginVertical: 20,
-      }}>{mealName}</ThemedText>
+      <ThemedView style={{ flexDirection: 'row', marginVertical: 20 }}>
+        <ThemedText style={{
+          fontSize: 24,
+          fontWeight: 'bold',
+          marginHorizontal: 30,
+        }}>{mealName}</ThemedText>
+        <MealMacrosTable foods={foods} />
+      </ThemedView>
       <StaticFoodsList foods={foods} removeCallback={removeCallback} editCallback={editCallback} />
       <View style={{
         height: 1,
