@@ -49,6 +49,9 @@ function MealScreen({ route }): React.JSX.Element {
     console.log(foods);
     setFoods([...foods, food]);
     setSearchFoods([]);
+    // reset amount for the next scan
+    setScannedAmount(100);
+
     addFoodTX(db, mealId, food);
   };
 
