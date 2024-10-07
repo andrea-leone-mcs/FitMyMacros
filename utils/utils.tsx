@@ -18,4 +18,11 @@ const sortByEditDistance = (objs, keyField, fixedStr) => {
     });
 };
 
+
+const getMacroSourceIndex = (foods: object[], macro: 'pros' | 'carbs' | 'fats') => {
+    const proteinRatios = foods.map(food => food[macro] / food['kcals']);
+    const maxIndex = proteinRatios.indexOf(Math.max(...proteinRatios));
+    return maxIndex;
+}
+
 export { roundToDecimalPlaces, sortByEditDistance };
