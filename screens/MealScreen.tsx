@@ -9,25 +9,36 @@ import { ScannerView } from "../components/ScannerView";
 import { findFoodById } from "../apis/apis";
 import SelectAmountDialog from "../components/SelectAmountDialog";
 import Ionicons from '@react-native-vector-icons/ionicons';
+import AmountsCalculatorDialog from "../components/AmountsCalculatorDialog";
+import { roundToDecimalPlaces } from "../utils/utils";
 
 
-function MealMacrosTable({ foods }) {
-  const kcals = foods.reduce((acc, food) => acc + food.kcals, 0);
-  const carbs = foods.reduce((acc, food) => acc + food.carbs, 0);
-  const proteins = foods.reduce((acc, food) => acc + food.proteins, 0);
-  const fats = foods.reduce((acc, food) => acc + food.fats, 0);
+function MealMacrosTable({ foods, setAmountsCalculatorVisible }) {
+  const kcals = foods.reduce((acc, food) => acc + food.kcals * food.amount / 100.0, 0);
+  const carbs = foods.reduce((acc, food) => acc + food.carbs * food.amount / 100.0, 0);
+  const proteins = foods.reduce((acc, food) => acc + food.proteins * food.amount / 100.0, 0);
+  const fats = foods.reduce((acc, food) => acc + food.fats * food.amount / 100.0, 0);
+
+  const handleAmountsCalculatorButton = () => {
+    if (foods.length < 3) {
+      ToastAndroid.show("Add at least 3 foods to calculate their optimal proportions.", ToastAndroid.SHORT);
+    } else {
+      setAmountsCalculatorVisible(true);
+    }
+  };
 
   return (
     <ThemedView style={{ flexDirection: 'row', alignItems: 'center' }}>
       <ThemedView style={{ flexDirection: 'column', justifyContent: 'space-around' }}>
         <ThemedView style={{ flexDirection: 'row', justifyContent: 'space-around' }}>
-          <ThemedText>{kcals} Kcal </ThemedText>
+          <ThemedText>{roundToDecimalPlaces(kcals, 1)} Kcal </ThemedText>
         </ThemedView>
         <ThemedView style={{ flexDirection: 'row', justifyContent: 'space-around' }}>
-          <ThemedText>{carbs}C, {proteins}P, {fats}F</ThemedText>
+          <ThemedText>{roundToDecimalPlaces(carbs, 1)}C, {roundToDecimalPlaces(proteins, 1)}P, {roundToDecimalPlaces(fats, 1)}F</ThemedText>
         </ThemedView>
       </ThemedView>
-      <Ionicons name="create-outline" style={{ marginLeft: 4 }} size={24} color={Colors.light} />
+      <Ionicons name="create-outline" style={{ marginLeft: 4 }} size={24} color={Colors.light}
+        onPress={handleAmountsCalculatorButton} />
     </ThemedView>
   );
 }
@@ -57,10 +68,13 @@ function MealScreen({ route }): React.JSX.Element {
   const [loading, setLoading] = useState(false);
   // scanned food object (retrieved from barcode)
   const [scannedFoodObj, setScannedFoodObj] = useState<object | undefined>(undefined);
-  // is the dialog to select the amount of the scanned food visible? this is used for the scanned food only
+  // select amount dialog visibility
   const [selectAmountVisible, setSelectAmountVisible] = useState(false);
   // amount of the scanned food
   const [scannedAmount, setScannedAmount] = useState(100);
+
+  // amounts calculator dialog visibility
+  const [amountsCalculatorVisible, setAmountsCalculatorVisible] = useState(false);
 
   // database context
   const db = useContext(DatabaseContext);
@@ -80,19 +94,14 @@ function MealScreen({ route }): React.JSX.Element {
   // remove a food from the meal (first in the state, then in the db)
   const removeCallback = (food) => {
     console.log("remove callback ", food.id);
-    setFoods(foods.filter(f => f["id"] !== food["id"]));
+    setFoods(foods.filter(f => f['id'] !== food['id']));
 
     delFoodTX(db, mealId, food);
   };
 
   // edit a food in the meal (first in the state, then in the db)
   const editCallback = (food) => {
-    setFoods(foods.map(f => {
-      if (f["id"] === food["id"]) {
-        return food;
-      }
-      return f;
-    }));
+    setFoods(foods.map(f => f['id'] !== food['id'] ? f : food));
 
     edtFoodTX(db, mealId, food);
   };
@@ -101,7 +110,7 @@ function MealScreen({ route }): React.JSX.Element {
   useEffect(() => {
     console.log('FOODS', foods);
     console.log('RECENTS', recentFoods);
-    setShownRecentFoods(recentFoods.filter(food => !foods.find(f => f["id"] === food["id"])));
+    setShownRecentFoods(recentFoods.filter(food => !foods.find(f => f['id'] === food['id'])));
   }, [foods]);
 
   // useEffect(() => {
@@ -130,7 +139,7 @@ function MealScreen({ route }): React.JSX.Element {
     <ThemedView style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
       <ThemedView style={{ flexDirection: 'row', marginVertical: 20 }}>
         <ThemedText style={styles.mealNameText}>{mealName}</ThemedText>
-        <MealMacrosTable foods={foods} />
+        <MealMacrosTable foods={foods} setAmountsCalculatorVisible={setAmountsCalculatorVisible} />
       </ThemedView>
       <StaticFoodsList foods={foods} removeCallback={removeCallback} editCallback={editCallback} />
       <View style={styles.horizontalLine} />
@@ -143,6 +152,10 @@ function MealScreen({ route }): React.JSX.Element {
             {
               selectAmountVisible &&
               <SelectAmountDialog visible={true} setVisible={setSelectAmountVisible} food={scannedFoodObj} amount={scannedAmount} setAmount={setScannedAmount} addCallback={addCallback} editCallback={undefined} />
+            }
+            {
+              amountsCalculatorVisible &&
+              <AmountsCalculatorDialog foods={foods} visible={true} setVisible={setAmountsCalculatorVisible} editCallback={editCallback} />
             }
             {
               searchPhrase !== "" ?
