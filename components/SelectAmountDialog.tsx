@@ -45,16 +45,11 @@ function SelectAmountDialog({ food, visible, setVisible, amount, setAmount, addC
   };
 
   const handleMinusCallback = delta => {
-    return () => {
-      setLocalAmount(localAmount => localAmount >= delta ? localAmount - delta : 0);
-    };
+    return () => setLocalAmount(localAmount => localAmount >= delta ? Math.floor(localAmount / delta) * delta - delta : 0);
   };
 
   const handlePlusCallback = delta => {
-    return () => {
-      console.log("Plus ", delta, localAmount);
-      setLocalAmount(localAmount => localAmount + delta);
-    };
+    return () => setLocalAmount(localAmount => Math.floor(localAmount / delta) * delta + delta);
   };
 
   return (
