@@ -17,6 +17,10 @@ function SelectAmountDialog({ food, visible, setVisible, amount, setAmount, addC
     if (visible) console.log("SelectAmountDialog for: ", food);
   }, [visible]);
 
+  useEffect(() => {
+    setLocalAmount(amount);
+  }, [amount]);
+
   const handleAddEditCallback = () => {
     console.log("SelectAmountDialog: Add/Edit");
     setAmount(localAmount);
