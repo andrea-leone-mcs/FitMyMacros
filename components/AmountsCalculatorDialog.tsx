@@ -125,9 +125,14 @@ const styles = StyleSheet.create({
   },
   textInput: {
     paddingVertical: 8,
+    marginTop: 4,
+    marginHorizontal: 24,
     fontSize: 18,
     flex: 1,
     textAlign: 'center',
+    borderWidth: 1,
+    borderColor: Colors.light,
+    borderRadius: 16,
   },
   rowView: {
     flexDirection: 'row',
