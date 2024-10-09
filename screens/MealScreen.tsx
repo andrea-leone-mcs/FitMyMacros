@@ -94,14 +94,15 @@ function MealScreen({ route }): React.JSX.Element {
   // remove a food from the meal (first in the state, then in the db)
   const removeCallback = (food) => {
     console.log("remove callback ", food.id);
-    setFoods(foods.filter(f => f['id'] !== food['id']));
+    setFoods(oldFoods => oldFoods.filter(f => f['id'] !== food['id']));
 
     delFoodTX(db, mealId, food);
   };
 
   // edit a food in the meal (first in the state, then in the db)
   const editCallback = (food) => {
-    setFoods(foods.map(f => f['id'] !== food['id'] ? f : food));
+    console.log("edit callback ", food, foods.map(f => f['id']));
+    setFoods(oldFoods => oldFoods.map(f => f['id'] !== food['id'] ? f : food));
 
     edtFoodTX(db, mealId, food);
   };

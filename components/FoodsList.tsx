@@ -21,6 +21,11 @@ function FoodItem({ food, addCallback, removeCallback, editCallback }) {
   // color of the trash icon - just for a nice effect
   const [trashBgColor, setTrashBgColor] = useState(Colors.dark);
 
+  useEffect(() => {
+    if (food.amount)
+      setAmount(food.amount);
+  }, [food]);
+
   return (
     <>
       {(addCallback || editCallback) && <SelectAmountDialog food={food} visible={dialogVisible} setVisible={setDialogVisible} amount={amount} setAmount={setAmount} addCallback={addCallback} editCallback={editCallback} />}
@@ -148,6 +153,7 @@ interface StaticFoodsListProps {
 };
 
 const StaticFoodsList: React.FC<StaticFoodsListProps> = ({ foods, addCallback, removeCallback, editCallback }) => {
+  console.log('SFL ', foods);
   return (
     <FlatList
       keyboardShouldPersistTaps="handled"

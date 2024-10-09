@@ -9,7 +9,6 @@ import { getMacroSource, solveSystemOfEquations } from "../utils/utils";
 
 // Dialog in the middle of the screen to select the amount of food
 function AmountsCalculatorDialog({ foods, visible, setVisible, editCallback }) {
-  const [localFoods, setLocalFoods] = useState([...foods]);
   const [desiredState, setDesiredState] = useState({
     kcals: '',
     carbs: Math.round(foods.reduce((acc, food) => acc + food.carbs * food.amount / 100.0, 0)).toString(),
@@ -43,10 +42,10 @@ function AmountsCalculatorDialog({ foods, visible, setVisible, editCallback }) {
   }
 
   const handleCalculate = () => {
-    const carbsSource = getMacroSource(localFoods, 'carbs');
-    const prosSource = getMacroSource(localFoods, 'proteins');
-    const fatsSource = getMacroSource(localFoods, 'fats');
-    const otherFoods = localFoods.filter(food => food.id !== carbsSource['id'] && food.id !== prosSource['id'] && food.id !== fatsSource['id']);
+    const carbsSource = getMacroSource(foods, 'carbs');
+    const prosSource = getMacroSource(foods, 'proteins');
+    const fatsSource = getMacroSource(foods, 'fats');
+    const otherFoods = foods.filter(food => food.id !== carbsSource['id'] && food.id !== prosSource['id'] && food.id !== fatsSource['id']);
     console.log('carbs, pros and fats sources: ', carbsSource, prosSource, fatsSource);
 
     let C = parseInt(desiredState['carbs']);
@@ -71,13 +70,11 @@ function AmountsCalculatorDialog({ foods, visible, setVisible, editCallback }) {
     console.log("carbs, pros and fats sources amounts: ", X);
 
     if (X && X[0] >= 0 && X[1] >= 0 && X[2] >= 0) {
-      carbsSource['amount'] = Math.round(X[0] * 100.0);
-      prosSource['amount'] = Math.round(X[1] * 100.0);
-      fatsSource['amount'] = Math.round(X[2] * 100.0);
-
-      editCallback(carbsSource);
-      editCallback(prosSource);
-      editCallback(fatsSource);
+      // round to the nearest 5 the new amounts
+      const newAmounts = X.map((x, _) => Math.floor(Math.round(x * 100.0) / 5) * 5);
+      editCallback({ ...carbsSource, 'amount': newAmounts[0] });
+      editCallback({ ...prosSource, 'amount': newAmounts[1] });
+      editCallback({ ...fatsSource, 'amount': newAmounts[2] });
 
       ToastAndroid.show("Food amounts adjusted.", ToastAndroid.SHORT);
     } else {
@@ -91,14 +88,19 @@ function AmountsCalculatorDialog({ foods, visible, setVisible, editCallback }) {
     <DialogContainer visible={visible} headerStyle={{ margin: 5, }} contentStyle={{ alignItems: "center" }}>
       <ThemedText style={{ fontSize: 20, marginBottom: 8 }}>Desired Macros</ThemedText>
       <View style={styles.rowView}>
-        <ThemedText style={styles.textInputLabel}>Kcals</ThemedText>
+        <ThemedText style={{
+          width: '100%',
+          textAlign: 'center',
+          fontSize: 16,
+        }}>
+          Kcals: {desiredState['kcals']}</ThemedText>
+      </View>
+      <View style={styles.rowView}>
         <ThemedText style={styles.textInputLabel}>Carbs</ThemedText>
         <ThemedText style={styles.textInputLabel}>Pros</ThemedText>
         <ThemedText style={styles.textInputLabel}>Fats</ThemedText>
       </View>
       <View style={styles.rowView}>
-        <TextInput style={[styles.textInput]} placeholder='0' keyboardType="numeric"
-          value={desiredState['kcals']} editable={false} />
         <TextInput style={styles.textInput} placeholder='0' keyboardType="numeric"
           value={desiredState['carbs']} onChangeText={text => handleOnChangeText(text, 'carbs')} />
         <TextInput style={styles.textInput} placeholder='0' keyboardType="numeric"
@@ -118,7 +120,7 @@ export default AmountsCalculatorDialog;
 
 const styles = StyleSheet.create({
   textInputLabel: {
-    width: '24%',
+    width: '33%',
     textAlign: 'center',
     marginTop: 8,
     fontSize: 16
