@@ -88,12 +88,9 @@ function AmountsCalculatorDialog({ foods, visible, setVisible, editCallback }) {
     <DialogContainer visible={visible} headerStyle={{ margin: 5, }} contentStyle={{ alignItems: "center" }}>
       <ThemedText style={{ fontSize: 20, marginBottom: 8 }}>Desired Macros</ThemedText>
       <View style={styles.rowView}>
-        <ThemedText style={{
-          width: '100%',
-          textAlign: 'center',
-          fontSize: 16,
-        }}>
-          Kcals: {desiredState['kcals']}</ThemedText>
+        <ThemedText style={{ width: '100%', textAlign: 'center', fontSize: 16, marginBottom: 8, }}>
+          Kcals: {desiredState['kcals']}
+        </ThemedText>
       </View>
       <View style={styles.rowView}>
         <ThemedText style={styles.textInputLabel}>Carbs</ThemedText>
@@ -110,7 +107,7 @@ function AmountsCalculatorDialog({ foods, visible, setVisible, editCallback }) {
       </View>
       <View style={{ flexDirection: 'row', justifyContent: "space-between", width: "100%", paddingHorizontal: 30, marginTop: 20 }}>
         <DialogButton style={{ fontSize: 16 }} label="Cancel" onPress={handleCancel} />
-        <DialogButton style={{ fontSize: 16 }} label="Calculate" onPress={handleCalculate} />
+        <DialogButton style={{ fontSize: 16 }} label="Adjust" onPress={handleCalculate} />
       </View>
     </DialogContainer>
   );
@@ -123,18 +120,14 @@ const styles = StyleSheet.create({
     width: '33%',
     textAlign: 'center',
     marginTop: 8,
-    fontSize: 16
+    fontSize: 18,
+    fontWeight: 'bold',
   },
   textInput: {
-    width: 70,
-    height: 40,
-    padding: 5,
-    fontSize: 16,
+    paddingVertical: 8,
+    fontSize: 18,
     flex: 1,
     textAlign: 'center',
-    color: Colors.light,
-    // borderBottomWidth: 1,
-    // borderBottomColor: Colors.light,
   },
   rowView: {
     flexDirection: 'row',
