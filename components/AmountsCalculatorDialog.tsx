@@ -79,7 +79,7 @@ function AmountsCalculatorDialog({ foods, visible, setVisible, editCallback }) {
       ToastAndroid.show("Food amounts adjusted.", ToastAndroid.SHORT);
     } else {
       console.log("No solution found");
-      ToastAndroid.show("Cannot find appropriate amounts.", ToastAndroid.SHORT);
+      ToastAndroid.show("Cannot adjust amounts.", ToastAndroid.SHORT);
     }
     setVisible(false);
   };

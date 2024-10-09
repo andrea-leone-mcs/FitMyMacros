@@ -21,7 +21,7 @@ function MealMacrosTable({ foods, setAmountsCalculatorVisible }) {
 
   const handleAmountsCalculatorButton = () => {
     if (foods.length < 3) {
-      ToastAndroid.show("Add at least 3 foods to calculate their optimal proportions.", ToastAndroid.SHORT);
+      ToastAndroid.show("Add at least 3 foods to adjust amounts.", ToastAndroid.SHORT);
     } else {
       setAmountsCalculatorVisible(true);
     }
@@ -82,7 +82,7 @@ function MealScreen({ route }): React.JSX.Element {
 
   // add a food to the meal (first in the state, then in the db)
   const addCallback = (food) => {
-    console.log(foods);
+    console.log("add callback ", food);
     setFoods([...foods, food]);
     setSearchFoods([]);
     // reset amount for the next scan
@@ -101,7 +101,7 @@ function MealScreen({ route }): React.JSX.Element {
 
   // edit a food in the meal (first in the state, then in the db)
   const editCallback = (food) => {
-    console.log("edit callback ", food, foods.map(f => f['id']));
+    console.log("edit callback ", food);
     setFoods(oldFoods => oldFoods.map(f => f['id'] !== food['id'] ? f : food));
 
     edtFoodTX(db, mealId, food);
