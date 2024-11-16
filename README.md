@@ -10,4 +10,6 @@ For instance, if today I decide to eat pasta with olive oil and cheese, plus som
 This is something I have often done manually, and I think it would be a great feature to have in a macro tracking app.
 
 ## User Interface
-The UI is intended to be as simple and clean as possible: no fancy graphics and animations, just a basic, easy-to-use interface.
+The UI is intended to be as simple and clean as possible: no fancy graphics and animations, just a basic, easy-to-use interface.\
+Here follows a sample app usage:\
+<img src="app-demo.gif"/>
