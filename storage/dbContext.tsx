@@ -45,6 +45,15 @@ const DatabaseContextProvider = ({ children }) => {
             throw error;  // Stop further execution if creation fails
           }
         );
+        tx.executeSql("CREATE TABLE IF NOT EXISTS daily_goals (date DATE PRIMARY KEY, kcals FLOAT, carbs FLOAT, proteins FLOAT, fats FLOAT)", [],
+          () => {
+            console.log("Table 'daily_goals' created successfully");
+          },
+          error => {
+            console.log("Table 'daily_goals' creation error: ", error);
+            throw error;  // Stop further execution if creation fails
+          }
+        );
       });
       setDb(dbInstance);
     };
