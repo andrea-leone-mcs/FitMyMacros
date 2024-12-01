@@ -5,8 +5,11 @@ The choice of this project comes from a personal need of tracking macros and the
 
 **FitMyMacros** is intended to be used by people with a basic understanding of macronutrients, calories, and their goals. Since there is no magic formula to calculate the perfect intakes, the user should set his goals on his own, based on his knowledge and personal experience. However, including a basic calculator to help the user set his goals is an idea for future development.
 
-This application also comes with a new feature which is super useful for people who are following a _flexible dieting_ / _IIFYM_ approach. Once a meal is selected, the app allows the user to select three foods as main sources of carbs, proteins and fats. The user can set the amount of each macronutrient to reach for that meal, and the app will calculate the total amount of each food needed to reach the goal.\
-For instance, if today I decide to eat pasta with olive oil and cheese, plus some chicken as a second dish, and I want to reach 80g of carbs, 20g of fats and 40g of proteins, the app will tell me how much pasta, oil, cheese and chicken I need to reach that goal.\
+### New Feature: Flexible Dieting / IIFYM Support
+This application includes a feature that is particularly useful for individuals following a _flexible dieting_ or _IIFYM_ (If It Fits Your Macros) approach. If you want to eat a specific dish but are unsure of the ingredient proportions needed to meet your target macros for that meal, this feature can help. You can add foods with their default amounts and use this feature to adjust the quantities to reach your target macros. The app will automatically adjust the main sources of carbs, proteins, and fats to meet your goals, while keeping the other foods at their default amounts.
+
+For example, if you plan to eat pasta with olive oil and parmesan, along with some chicken, and your goal is to consume 80g of carbs, 20g of fats, and 40g of proteins, the app will calculate the required amounts of pasta (main source of carbs), oil (main source of fats), and chicken (main source of proteins) to meet these targets. On the other hand, it won't touch the amount of cheese. However, you usually put something like a tablespoon of parmesan on your dish (~10 grams), so you can just record that amount for parmesan and then let the app calculate the rest. Since parmesan is a good source of fats and proteins, you will need a bit less oil and a bit less chicken to reach your goal.
+
 This is something I have often done manually, and I think it would be a great feature to have in a macro tracking app.
 
 ## User Interface
